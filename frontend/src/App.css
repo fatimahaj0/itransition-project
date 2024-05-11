@@ -1,0 +1,14 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark-mode {
+  background-color: #333;
+  color: #fff;
+}
