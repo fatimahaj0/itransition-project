@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
-import "./signin.css"
+import "./style.css"
 
 function SignIn() {
   const [email, setEmail] = useState("");

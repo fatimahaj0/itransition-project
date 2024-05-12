@@ -1,5 +1,5 @@
 import React from 'react';
-import './Navbar.css';
+import './style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
@@ -14,8 +14,10 @@ function Navbar({ theme, setTheme }) {
     <div className="container">
 		<div className="navbar">
 			  <ul>
-				<li>Home</li>
-				<li>
+				<li className="fs-18">
+					<Link to="/">Home</Link>
+				</li>
+				<li className="fs-18">
 					<Link to="/signin">Sign In</Link>
 				</li>
 			  </ul>
