@@ -11,19 +11,21 @@ function Navbar({ theme, setTheme }) {
   };
 
   return (
-    <div className="navbar">
-      <ul>
-        <li>Home</li>
-        <li>
-			<Link to="/signin">Sign In</Link>
-		</li>
-      </ul>
-      <div className="search">
-        <input type="text" placeholder="Search" />
-      </div>
-      <div className="toggle-container" onClick={switchTheme}>
-        <FontAwesomeIcon icon={theme === 'light' ? faSun : faMoon} className={theme === 'dark' ? 'moon-icon' : ''} />
-      </div>
+    <div className="container">
+		<div className="navbar">
+			  <ul>
+				<li>Home</li>
+				<li>
+					<Link to="/signin">Sign In</Link>
+				</li>
+			  </ul>
+			  <div className="search">
+				<input type="text" placeholder="Search" />
+			  </div>
+			  <div className="toggle-container" onClick={switchTheme}>
+				<FontAwesomeIcon icon={theme === 'light' ? faSun : faMoon} className={theme === 'dark' ? 'moon-icon' : ''} />
+			  </div>
+		</div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ function SignIn() {
 };
 
   return (
-	<div className="d-flex justify-content-center align-items-center vh-100">
+	<div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card shadow p-4" style={{ maxWidth: "400px" }}>
         <h2 className="text-center mb-4">Login</h2>
         <form onSubmit={handleSubmit}>

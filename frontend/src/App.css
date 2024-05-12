@@ -1,3 +1,8 @@
+.color-text{color: var(--text-color);}
+.color-bg{background-color: var(--body-color);}
+
+.container{width: 1650px;max-width: 90%;margin: auto;padding: 0 !important}
+
 :root {
   --body-color: white;
   --text-color: black;
