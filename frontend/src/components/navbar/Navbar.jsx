@@ -2,6 +2,7 @@ import React from 'react';
 import './Navbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 function Navbar({ theme, setTheme }) {
 
@@ -13,9 +14,9 @@ function Navbar({ theme, setTheme }) {
     <div className="navbar">
       <ul>
         <li>Home</li>
-      
-        
-        <li>Sign In</li>
+        <li>
+			<Link to="/signin">Sign In</Link>
+		</li>
       </ul>
       <div className="search">
         <input type="text" placeholder="Search" />

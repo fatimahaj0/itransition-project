@@ -1,9 +1,9 @@
 .navbar {
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 7%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 15px 7% !important;
 }
 
 ul {

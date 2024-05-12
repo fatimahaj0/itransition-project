@@ -1,14 +1,21 @@
+:root {
+  --body-color: white;
+  --text-color: black;
+}
+
+.dark-mode {
+  --body-color: #333;
+  --text-color: white;
+}
+
 body {
-  font-family: Arial, sans-serif;
+	background-color: var(--body-color) !important;
+	 color: var(--text-color)!important;
+	 font-family: Arial, sans-serif!important;
 }
 
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.dark-mode {
-  background-color: #333;
-  color: #fff;
 }
