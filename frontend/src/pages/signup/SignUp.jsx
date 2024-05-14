@@ -3,7 +3,7 @@ import { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import Validation from './SignUpValidation';
 import axios from 'axios';
-
+import bcrypt from 'bcryptjs';
 function SignUp() {
   const [values, setValues] = useState({
     username: '',
@@ -18,21 +18,25 @@ function SignUp() {
     setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setError(Validation(values));
+const hashedPassword = await bcrypt.hash(values.password, 10);
 
+    axios.post('http://localhost:8081/signup', { ...values, password: hashedPassword }) 
+      .then(res => {
+        console.log("Response from backend:", res);
+        navigate('/');
+      })
+      .catch(err => console.log(err));
+  }
    
 		
 		
-      axios.post('http://localhost:8081/signup', values)
-        .then(res => {
-			console.log("Response from backend:", res);
-          navigate('/');
-        })
-        .catch(err => console.log(err))
+
+	 
     
-  }
+  
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
@@ -94,9 +98,15 @@ function SignUp() {
           </button>
         </form>
         <p className="mt-3 mb-0 text-center">Already Have an Account?</p>
+		 <Link
+          to="/signin"
+          className="btn btn-link btn-sm d-block mx-auto text-center"
+        >
+          Login
+        </Link>
       </div>
     </div>
-  );
+  )
 }
 
 export default SignUp;
