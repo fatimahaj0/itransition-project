@@ -31,13 +31,7 @@ const hashedPassword = await bcrypt.hash(values.password, 10);
       .catch(err => console.log(err));
   }
    
-		
-		
-
-	 
-    
   
-
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <div className="card shadow p-4" style={{ maxWidth: "400px" }}>
@@ -98,7 +92,7 @@ const hashedPassword = await bcrypt.hash(values.password, 10);
           </button>
         </form>
         <p className="mt-3 mb-0 text-center">Already Have an Account?</p>
-		 <Link
+     <Link
           to="/signin"
           className="btn btn-link btn-sm d-block mx-auto text-center"
         >

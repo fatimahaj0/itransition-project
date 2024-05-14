@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
+import axios from 'axios';
 import "./style.css"
 
 function SignIn() {
@@ -8,27 +9,30 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState();
   const navigate = useNavigate();
+  
  const handleSubmit = (e) => {
   e.preventDefault();
   axios
-    .post("http://localhost:3000/login", { email, password })
+    .post("http://localhost:8081/signin", { email, password })
     .then((result) => {
-      console.log(result);
-	  if (result.data.message === "success") {
-        navigate("/");
+	  if (result.data.success) {
+		  localStorage.setItem('token', result.data.token);
+			const navigateTo = result.data.isAdmin ? "/admin-panel" : "/";
+			navigate(navigateTo);
+      } else {
+        setErrorMessage(response.data.error || "Sign-in was unsuccessful.");
       }
     })
-    .catch((err) => {
-		 if (err.response) {
-      if (err.response.status === 403) {
-        setErrorMessage("Sorry, you cannot login, you are blocked.");
-      } else if (err.response.status === 404) {
-        setErrorMessage(err.response.data.message);
+   .catch((error) => {
+      if (error.response) {
+        setErrorMessage(error.response.data.error || "An unknown error occurred.");
+      } else if (error.request) {
+        setErrorMessage("No response from server. Please try again later.");
+      } else {
+		  console.log(error);
+        setErrorMessage("An error occurred. Please try again later.");
       }
-    } else {
-      setError("An error occurred. Please try again later.");
-    }
-});
+    });
 };
 
   return (
@@ -74,7 +78,7 @@ function SignIn() {
         </form>
         <p className="mt-3 mb-0 text-center">Don't have an Account?</p>
         <Link
-          to="/register"
+          to="/signup"
           className="btn btn-link btn-sm d-block mx-auto text-center"
         >
           Register
