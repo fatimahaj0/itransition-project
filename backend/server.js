@@ -35,7 +35,28 @@ app.post('/signup', (req, res) => {
     return res.json({ success: true, message: "User added successfully" });
   });
 });
-
+// Endpoint to fetch data from the collection table
+app.get('/collection', (req, res) => {
+  const sql = "SELECT * FROM collection"; // Adjust query if needed
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Error fetching data from collection:", err);
+      return res.status(500).json({ error: "Error fetching data from collection" });
+    }
+    res.json(result); // Send fetched data as response
+  });
+});
+app.get('/collection/:id/items', (req, res) => {
+  const collectionId = req.params.id;
+  const sql = "SELECT * FROM item WHERE collectionId = ?";
+  db.query(sql, [collectionId], (err, result) => {
+    if (err) {
+      console.error("Error in database query:", err);
+      return res.status(500).json({ error: "Error occurred while fetching items" });
+    }
+    return res.json(result);
+  });
+});
 app.listen(8081, () => {
   console.log("Server is running on port 8081");
 });
