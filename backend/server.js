@@ -77,6 +77,7 @@ app.get('/collection', (req, res) => {
     res.json(result);
   });
 });
+
 app.get('/collection/:id/items', (req, res) => {
   const collectionId = req.params.id;
   const sql = "SELECT * FROM item WHERE collectionId = ?";

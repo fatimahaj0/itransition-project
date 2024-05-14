@@ -30,7 +30,6 @@ const hashedPassword = await bcrypt.hash(values.password, 10);
       })
       .catch(err => console.log(err));
   }
-   
   
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
