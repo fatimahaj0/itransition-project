@@ -8,6 +8,7 @@ import AdminPanel from './pages/adminpanel/Adminpanel';
 import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/Signin";
 import SignUp from "./pages/signup/SignUp";
+import Items from "./pages/items/Items";
 
 const isAdmin = () => {
   const token = localStorage.getItem('token');
@@ -43,6 +44,8 @@ function App() {
         <Route path="/signin" element={<SignIn />}></Route>
 		<Route path="/signup" element={<SignUp/>}></Route>
 		<Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+		<Route path="/signup" element={<SignUp/>}></Route> 
+		<Route path="/collection/:collectionId/items" element ={<Items />}> </Route>
       </Routes>
 	
       
