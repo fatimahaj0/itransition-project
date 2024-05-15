@@ -21,12 +21,12 @@ function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(Validation(values));
-const hashedPassword = await bcrypt.hash(values.password, 10);
+	const hashedPassword = await bcrypt.hash(values.password, 10);
 
     axios.post('http://localhost:8081/signup', { ...values, password: hashedPassword }) 
       .then(res => {
         console.log("Response from backend:", res);
-        navigate('/');
+        navigate('/signin');
       })
       .catch(err => console.log(err));
   }

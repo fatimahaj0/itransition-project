@@ -43,14 +43,10 @@ function Home() {
                         {data.map((item, index) => (
                             <tr key={index}>
                                 <td className="color-text color-bg">{item.id}</td>
-                                <td className="color-text color-bg">{item.name}</td>
+                                <td className="color-text color-bg"><Link to={`/collection/${item.id}/items`}>{item.name}</Link></td>
                                 <td className="color-text color-bg">{item.description}</td>
                                 <td className="color-text color-bg">{item.category}</td>
                                 <td className="color-text color-bg">{item.image}</td>
-                                <td className="color-text color-bg"> 
-                                 <Link to={`/collection/${item.id}/items`}>View Items</Link>
-
-                                </td>
                             </tr>
                         ))}
                     </tbody>

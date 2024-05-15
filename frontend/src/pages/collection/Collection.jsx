@@ -25,7 +25,6 @@ const Collection = () => {
       })
       .catch(err => console.log(err));
 
-    // Clear form after submission
     setFormData({
       name: '',
       description: '',
