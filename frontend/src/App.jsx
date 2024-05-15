@@ -6,6 +6,7 @@ import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/Signin";
 import SignUp from "./pages/signup/SignUp";
 import Items from "./pages/items/Items";
+import Collection from "./pages/collection/Collection";
 
 function App() {
   const [theme, setTheme] = useState('light');
@@ -28,6 +29,7 @@ function App() {
         <Route path="/signin" element={<SignIn />}></Route>
 		<Route path="/signup" element={<SignUp/>}></Route> 
 		<Route path="/collection/:collectionId/items" element ={<Items />}> </Route>
+		<Route path="/create"  element ={<Collection />} > </Route>
 
       </Routes>
 	

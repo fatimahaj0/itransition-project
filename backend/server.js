@@ -57,6 +57,22 @@ app.get('/collection/:id/items', (req, res) => {
     return res.json(result);
   });
 });
+app.post('/create' , (req,res) => {
+	const name = req.body.name 
+	const description = req.body.description ;
+	const category = req.body.category ;
+	const image = req.body.image ;
+	db.query(
+	"INSERT INTO `collection` (`name`, `description`, `category` , `image`) VALUES (?, ?, ? , ?)" , [ name , description , category , image] , 
+	( err , result) => {
+		if(err){
+			console.log(err)
+		} else{
+			res.send("data added") 
+		}
+	}
+	)
+})
 app.listen(8081, () => {
   console.log("Server is running on port 8081");
 });
