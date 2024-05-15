@@ -13,7 +13,6 @@ function Home() {
         }
         const responseData = await response.json();
 
-        // Check if responseData is an array (assuming your API returns an array)
         if (!Array.isArray(responseData)) {
             throw new Error('Invalid data format');
         }
