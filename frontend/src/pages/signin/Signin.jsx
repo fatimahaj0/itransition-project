@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
+import { useAuth } from '../../components/AuthContext';
 import axios from 'axios';
 import "./style.css"
 
@@ -8,6 +9,7 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState();
+  const { toggleAuth } = useAuth();
   const navigate = useNavigate();
   
  const handleSubmit = (e) => {
@@ -16,7 +18,8 @@ function SignIn() {
     .post("http://localhost:8081/signin", { email, password })
     .then((result) => {
 	  if (result.data.success) {
-		  localStorage.setItem('token', result.data.token);
+			localStorage.setItem('token', result.data.token);
+			toggleAuth(true);
 			const navigateTo = result.data.isAdmin ? "/admin-panel" : "/";
 			navigate(navigateTo);
       } else {

@@ -31,23 +31,23 @@ function Home() {
                 <table className="table table-striped table-bordered">
                     <thead className="thead-dark">
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Image</th>
-                            <th>View Items</th> 
+                            <th className="color-text color-bg">ID</th>
+                            <th className="color-text color-bg">Name</th>
+                            <th className="color-text color-bg">Description</th>
+                            <th className="color-text color-bg">Category</th>
+                            <th className="color-text color-bg">Image</th>
+                            <th className="color-text color-bg">View Items</th> 
                         </tr>
                     </thead>
                     <tbody>
                         {data.map((item, index) => (
                             <tr key={index}>
-                                <td>{item.id}</td>
-                                <td>{item.name}</td>
-                                <td>{item.description}</td>
-                                <td>{item.category}</td>
-                                <td>{item.image}</td>
-                                <td> 
+                                <td className="color-text color-bg">{item.id}</td>
+                                <td className="color-text color-bg">{item.name}</td>
+                                <td className="color-text color-bg">{item.description}</td>
+                                <td className="color-text color-bg">{item.category}</td>
+                                <td className="color-text color-bg">{item.image}</td>
+                                <td className="color-text color-bg"> 
                                  <Link to={`/collection/${item.id}/items`}>View Items</Link>
 
                                 </td>

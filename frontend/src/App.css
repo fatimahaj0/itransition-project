@@ -1,5 +1,5 @@
-.color-text{color: var(--text-color);}
-.color-bg{background-color: var(--body-color);}
+.color-text{color: var(--text-color) !important;}
+.color-bg{background-color: var(--body-color) !important;}
 
 .container{width: 1650px;max-width: 90%;margin: 0 auto;padding: 0 !important}
 
