@@ -13,7 +13,7 @@ const db = mysql.createConnection({
  
   host: 'localhost',
   user: 'root',
-  password: 'rootpass#$',
+  password: '12345',
   database: 'itransition',
 });
 db.query("SELECT 1", (err, result) => {

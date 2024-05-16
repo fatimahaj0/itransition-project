@@ -36,17 +36,19 @@ function Home() {
                             <th className="color-text color-bg">Description</th>
                             <th className="color-text color-bg">Category</th>
                             <th className="color-text color-bg">Image</th>
-                            <th className="color-text color-bg">View Items</th> 
+                            
                         </tr>
                     </thead>
                     <tbody>
                         {data.map((item, index) => (
                             <tr key={index}>
                                 <td className="color-text color-bg">{item.id}</td>
-                                <td className="color-text color-bg"><Link to={`/collection/${item.id}/items`}>{item.name}</Link></td>
+                               <td className="color-text color-bg"> <Link to={`/collection/${item.id}/items`}> {item.name}</Link></td>
+
                                 <td className="color-text color-bg">{item.description}</td>
                                 <td className="color-text color-bg">{item.category}</td>
-                                <td className="color-text color-bg">{item.image}</td>
+                                <td className="color-text color-bg"> <img src={item.image} alt={item.name} style={{ maxWidth: '100px', height: 'auto' }} /></td>
+                                
                             </tr>
                         ))}
                     </tbody>
