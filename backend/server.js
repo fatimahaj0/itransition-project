@@ -13,7 +13,7 @@ const db = mysql.createConnection({
  
   host: 'localhost',
   user: 'root',
-  password: '12345',
+  password: 'rootpass#$',
   database: 'itransition',
 });
 db.query("SELECT 1", (err, result) => {
@@ -90,22 +90,32 @@ app.get('/collection/:id/items', (req, res) => {
   });
 });
 
-app.post('/create' , (req,res) => {
-  const name = req.body.name 
-  const description = req.body.description ;
-  const category = req.body.category ;
-  const image = req.body.image ;
-  db.query(
-  "INSERT INTO collection (name, description, category , image) VALUES (?, ?, ? , ?)" , [ name , description , category , image] , 
-  ( err , result) => {
-    if(err){
-      console.log(err)
-    } else{
-      res.send("data added") 
+app.post('/create', (req, res) => {
+  const { name, description, category, image } = req.body;
+
+  const token = req.headers.authorization.split(' ')[1];
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
-  }
-  )
-})
+
+    const userId = decoded.id;
+
+    const sql = "INSERT INTO collection (name, description, category, image, userId) VALUES (?, ?, ?, ?, ?)";
+    const values = [name, description, category, image, userId];
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Error occurred while adding collection' });
+      } else {
+        res.send("Data added");
+      }
+    });
+  });
+});
+
 
 app.listen(8081, () => {
   console.log("Server is running on port 8081");

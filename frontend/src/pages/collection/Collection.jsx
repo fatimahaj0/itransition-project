@@ -21,40 +21,48 @@ const Collection = () => {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
-
+ 
+	  
   const handleSubmit = async(event) => {
     event.preventDefault();
-    const formDataWithFile = new FormData();
-    formDataWithFile.append('file', file);
-    formDataWithFile.append('upload_preset', 'oe8ddeiz');
+  const token = localStorage.getItem('token');
+  const formDataWithFile = new FormData();
+  formDataWithFile.append('file', file);
+  formDataWithFile.append('upload_preset', 'oe8ddeiz');
 
-    try {
-      const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
-      const imageUrl = response.data.secure_url;
+  try {
+    const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
+    const imageUrl = response.data.secure_url;
 
-      const collectionData = {
-        ...formData,
-        image: imageUrl
-      };
+    const collectionData = {
+      ...formData,
+      image: imageUrl
+    };
 
-      axios.post('http://localhost:8081/create', collectionData)
-        .then(res => {
-          console.log("Response from backend:", res);
-        })
-        .catch(err => console.log(err));
+    axios({
+      method: 'post',
+      url: 'http://localhost:8081/create',
+      data: collectionData,
+      headers: {
+        'Authorization': `Bearer ${token}` 
+      }
+    })
+    .then(res => {
+      console.log("Response from backend:", res);
+    })
+    .catch(err => console.log(err));
 
-      setFormData({
-        name: '',
-        description: '',
-        category: '',
-        image: ''
-      });
+    setFormData({
+      name: '',
+      description: '',
+      category: '',
+      image: ''
+    });
 
-     
-      setImageUrl(imageUrl);
-    } catch (error) {
-      console.error("Error uploading image to Cloudinary:", error);
-    }
+    setImageUrl(imageUrl);
+  } catch (error) {
+    console.error("Error uploading image to Cloudinary:", error);
+  }
   }
 
   return (

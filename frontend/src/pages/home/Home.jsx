@@ -36,7 +36,6 @@ function Home() {
                             <th className="color-text color-bg">Description</th>
                             <th className="color-text color-bg">Category</th>
                             <th className="color-text color-bg">Image</th>
-                            
                         </tr>
                     </thead>
                     <tbody>
