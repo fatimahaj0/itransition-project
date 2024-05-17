@@ -13,7 +13,7 @@ const db = mysql.createConnection({
  
   host: 'localhost',
   user: 'root',
-  password: 'rootpass#$',
+  password: '12345',
   database: 'itransition',
 });
 db.query("SELECT 1", (err, result) => {
@@ -23,7 +23,24 @@ db.query("SELECT 1", (err, result) => {
     console.log("Database connection successful");
   }
 });
+const validateCustomFields = (customFields) => {
+    const fieldTypes = {
+        int: 0,
+        string: 0,
+        multilineText: 0,
+        boolean: 0,
+        date: 0
+    };
 
+    for (const field of customFields) {
+        fieldTypes[field.type]++;
+        if (fieldTypes[field.type] > 3) {
+            return false;
+        }
+    }
+
+    return true;
+};
 app.post('/signup', (req, res) => {
   const { username, email, password } = req.body;
 
@@ -122,6 +139,37 @@ app.get('/categories', (req, res) => {
     if (err) throw err;
     res.send(result);
   });
+});
+app.post('/collection/:collectionId/items', (req, res) => {
+    const collectionId = req.params.collectionId;
+    const { name, tags, customFields } = req.body;
+
+    if (!validateCustomFields(customFields)) {
+        return res.status(400).json({ error: "Maximum of three fields allowed for each type" });
+    }
+
+    console.log("Received request to create item:", { name, tags, collectionId });
+
+    const sql = "INSERT INTO item (name, tags, collectionId, customFields) VALUES (?, ?, ?, ?)";
+    const values = [name, tags, collectionId, JSON.stringify(customFields)];
+
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error("Error creating item:", err);
+            return res.status(500).json({ error: "Failed to create item", details: err.message });
+        }
+
+        const newItemId = result.insertId;
+        const fetchSql = "SELECT * FROM item WHERE id = ?";
+        db.query(fetchSql, [newItemId], (err, fetchResult) => {
+            if (err) {
+                console.error("Error fetching new item:", err);
+                return res.status(500).json({ error: "Failed to fetch new item", details: err.message });
+            }
+
+            return res.json(fetchResult[0]);
+        });
+    });
 });
 
 
