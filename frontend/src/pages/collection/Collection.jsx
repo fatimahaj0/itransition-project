@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Collection = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: '',
+    categoryId: '',
     image: ''
   });
   const [file, setFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [categories, setCategories] = useState([]);
+  
+  useEffect(() => {
+	  axios.get('http://localhost:8081/categories')
+		.then(response => {
+		  setCategories(response.data);
+		})
+		.catch(error => console.error('Error:', error));
+}, []);
 
   const handleChange = (event) => {
     setFormData(prev => ({
       ...prev,
       [event.target.name]: event.target.value 
     }));
+	console.log(formData);
   };
 
   const handleFileChange = (event) => {
@@ -25,44 +35,44 @@ const Collection = () => {
 	  
   const handleSubmit = async(event) => {
     event.preventDefault();
-  const token = localStorage.getItem('token');
-  const formDataWithFile = new FormData();
-  formDataWithFile.append('file', file);
-  formDataWithFile.append('upload_preset', 'oe8ddeiz');
+	  const token = localStorage.getItem('token');
+	  const formDataWithFile = new FormData();
+	  formDataWithFile.append('file', file);
+	  formDataWithFile.append('upload_preset', 'oe8ddeiz');
 
-  try {
-    const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
-    const imageUrl = response.data.secure_url;
+	  try {
+		const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
+		const imageUrl = response.data.secure_url;
 
-    const collectionData = {
-      ...formData,
-      image: imageUrl
-    };
+		const collectionData = {
+		  ...formData,
+		  image: imageUrl
+		};
 
-    axios({
-      method: 'post',
-      url: 'http://localhost:8081/create',
-      data: collectionData,
-      headers: {
-        'Authorization': `Bearer ${token}` 
-      }
-    })
-    .then(res => {
-      console.log("Response from backend:", res);
-    })
-    .catch(err => console.log(err));
+		axios({
+		  method: 'post',
+		  url: 'http://localhost:8081/create',
+		  data: collectionData,
+		  headers: {
+			'Authorization': `Bearer ${token}` 
+		  }
+		})
+		.then(res => {
+		  console.log("Response from backend:", res);
+		})
+		.catch(err => console.log(err));
 
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      image: ''
-    });
+		setFormData({
+		  name: '',
+		  description: '',
+		  categoryId: '',
+		  image: ''
+		});
 
-    setImageUrl(imageUrl);
-  } catch (error) {
-    console.error("Error uploading image to Cloudinary:", error);
-  }
+		setImageUrl(imageUrl);
+	  } catch (error) {
+		console.error("Error uploading image to Cloudinary:", error);
+	  }
   }
 
   return (
@@ -95,15 +105,18 @@ const Collection = () => {
         </div>
         <div className="mb-3">
           <label htmlFor="category" className="form-label">Category:</label>
-          <input 
-            type="text" 
-            id="category" 
-            name="category" 
-            value={formData.category} 
+		  <select 
+            id="categoryId" 
+            name="categoryId" 
+            value={formData.categoryId} 
             onChange={handleChange} 
             className="form-control" 
             required 
-          />
+          >
+            {categories.map(item => (
+              <option key={item.id} value={item.id}>{item.name}</option>
+            ))}
+          </select>
         </div>
         <div className="mb-3">
           <label htmlFor="image" className="form-label">Image:</label>

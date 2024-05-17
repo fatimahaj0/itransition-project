@@ -91,7 +91,7 @@ app.get('/collection/:id/items', (req, res) => {
 });
 
 app.post('/create', (req, res) => {
-  const { name, description, category, image } = req.body;
+  const { name, description, categoryId, image } = req.body;
 
   const token = req.headers.authorization.split(' ')[1];
 
@@ -102,8 +102,8 @@ app.post('/create', (req, res) => {
 
     const userId = decoded.id;
 
-    const sql = "INSERT INTO collection (name, description, category, image, userId) VALUES (?, ?, ?, ?, ?)";
-    const values = [name, description, category, image, userId];
+    const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
+    const values = [name, description, categoryId, image, userId];
 
     db.query(sql, values, (err, result) => {
       if (err) {
@@ -113,6 +113,14 @@ app.post('/create', (req, res) => {
         res.send("Data added");
       }
     });
+  });
+});
+
+app.get('/categories', (req, res) => {
+  const sql = 'SELECT * FROM category';
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    res.send(result);
   });
 });
 
