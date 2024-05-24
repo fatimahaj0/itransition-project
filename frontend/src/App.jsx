@@ -12,6 +12,7 @@ import SignUp from "./pages/signup/SignUp";
 import Items from "./pages/items/Items";
 import Collection from "./pages/collection/Collection";
 
+
 const isAdmin = () => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -28,31 +29,31 @@ const AdminRoute = ({ children }) => {
 function App() {
   const [theme, setTheme] = useState('light');
  
- useEffect(() => {
-  if (theme === 'dark') {
-    document.body.classList.add('dark-mode');
-  } else {
-    document.body.classList.remove('dark-mode');
-  }
-}, [theme]);
-
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [theme]);
 
   return (
+ 
+      <AuthProvider>
+        <div className="app">
+          <Navbar theme={theme} setTheme={setTheme} />
+          <Routes>
+            <Route path="/" element={<Home />}></Route>
+            <Route path="/signin" element={<SignIn />}></Route>
+            <Route path="/signup" element={<SignUp/>}></Route>
+            <Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+            <Route path="/signup" element={<SignUp/>}></Route> 
+            <Route path="/collection/:collectionId/items" element ={<Items />}> </Route>
+            <Route path="/create"  element ={<Collection />} > </Route>
+          </Routes>
+        </div>
+      </AuthProvider>
 
-   <AuthProvider>
-		<div className="app">
-			<Navbar theme={theme} setTheme={setTheme} />
-			  <Routes>
-				<Route path="/" element={<Home />}></Route>
-				<Route path="/signin" element={<SignIn />}></Route>
-				<Route path="/signup" element={<SignUp/>}></Route>
-				<Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
-				<Route path="/signup" element={<SignUp/>}></Route> 
-				<Route path="/collection/:collectionId/items" element ={<Items />}> </Route>
-				<Route path="/create"  element ={<Collection />} > </Route>
-			  </Routes>
-		</div>
-	</AuthProvider>
   );
 }
 

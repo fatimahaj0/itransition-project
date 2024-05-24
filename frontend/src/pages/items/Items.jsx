@@ -17,11 +17,12 @@ function Items() {
         date: 0,
         boolean: 0
     });
+    const [tagSuggestions, setTagSuggestions] = useState([]);
 
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const response = await fetch(http://localhost:8081/collection/${collectionId}/items);
+                const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch items');
                 }
@@ -37,13 +38,37 @@ function Items() {
         fetchItems();
     }, [collectionId]);
 
-    const handleChange = (event) => {
-        setItemData({
-            ...itemData,
-            [event.target.name]: event.target.value,
-        });
-    };
 
+useEffect(() => {
+    if (itemData.tags.trim() !== '') {
+        const fetchTags = async () => {
+            try {
+                const response = await fetch(`http://localhost:8081/tags?query=${itemData.tags}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch tags');
+                }
+                const tagsData = await response.json();
+                setTagSuggestions(tagsData);
+                console.log('Tags fetched:', tagsData);
+            } catch (error) {
+                console.error('Error fetching tags:', error);
+            }
+        };
+
+        fetchTags();
+    }
+}, [itemData.tags]);
+
+
+
+   
+
+    const handleChange = (event) => {
+        setItemData(prevItemData => ({
+        ...prevItemData,
+        [event.target.name]: event.target.value,
+    }));
+};
     const handleCustomFieldNameChange = (index, value) => {
         const updatedCustomFields = [...customFields];
         updatedCustomFields[index].name = value;
@@ -59,26 +84,23 @@ function Items() {
     const handleDateChange = (index, field, value) => {
         const updatedCustomFields = [...customFields];
         updatedCustomFields[index][field] = value;
-        // Combine date parts into a single string
+        
         const { year, month, day } = updatedCustomFields[index];
-        updatedCustomFields[index].value = ${year}-${month}-${day};
+        updatedCustomFields[index].value = `${year}-${month}-${day}`;
         setCustomFields(updatedCustomFields);
     };
 
     const addCustomField = (fieldType) => {
-        // Check if adding this custom field exceeds the maximum limit
         if (fieldCounts[fieldType] >= 3) {
             setError('Maximum of three fields allowed for each type');
             return;
         }
-
-        // Increment the count for this type
+        
         setFieldCounts({
             ...fieldCounts,
             [fieldType]: fieldCounts[fieldType] + 1
         });
 
-        // Add the custom field
         setCustomFields([...customFields, { name: '', value: getDefaultFieldValue(fieldType), type: fieldType, year: '', month: '', day: '' }]);
     };
 
@@ -91,7 +113,7 @@ function Items() {
             case 'multiline':
                 return '';
             case 'date':
-                return ''; // Default to empty string
+                return ''; 
             case 'boolean':
                 return false;
             default:
@@ -103,7 +125,7 @@ function Items() {
         event.preventDefault();
 
         try {
-            const response = await fetch(http://localhost:8081/collection/${collectionId}/items, {
+            const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,14 +139,14 @@ function Items() {
 
             const responseData = await response.json();
             console.log('New item created:', responseData);
-			setItems([...items, responseData]);
+            setItems([...items, responseData]);
             setItemData({
                 name: '',
                 tags: '',
             });
             setCustomFields([]);
             setError(null);
-            // Reset field counts
+         
             setFieldCounts({
                 string: 0,
                 number: 0,
@@ -181,34 +203,44 @@ function Items() {
                     <label htmlFor="tags" className="form-label">
                         Tags:
                     </label>
-                    <input
-                        type="text"
-                        id="tags"
-                        name="tags"
-                        value={itemData.tags}
-                        onChange={handleChange}
-                        className="form-control"
-                        required
-                    />
-                </div>
-				{customFields.map((field, index) => (
+    
+<input
+    type="text"
+    id="tags"
+    name="tags"
+    value={itemData.tags}
+    onChange={handleChange}
+    className="form-control"
+    required
+/>
+
+<div className="autocomplete-dropdown">
+        {tagSuggestions.length > 0 && tagSuggestions.map((tag) => (
+            <div key={tag.id}>
+                {tag.name}
+            </div>
+        ))}
+    </div>
+</div>
+                  
+                {customFields.map((field, index) => (
                     <div key={index}>
-                        <label htmlFor={customFieldName-${index}} className="form-label">
+                        <label htmlFor={`customFieldName-${index}`} className="form-label">
                             Custom Field Name:
                         </label>
                         <input
                             type="text"
-                            id={customFieldName-${index}}
+                            id={`customFieldName-${index}`}
                             value={field.name}
                             onChange={(e) => handleCustomFieldNameChange(index, e.target.value)}
                             className="form-control"
                         />
-                        <label htmlFor={customFieldValue-${index}} className="form-label">
+                        <label htmlFor={`customFieldValue-${index}`} className="form-label">
                             Custom Field Value:
                         </label>
                         {field.type === 'multiline' ? (
                             <textarea
-                                id={customFieldValue-${index}}
+                                id={`customFieldValue-${index}`}
                                 value={field.value}
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
                                 className="form-control"
@@ -216,7 +248,7 @@ function Items() {
                         ) : field.type === 'boolean' ? (
                             <input
                                 type="checkbox"
-                                id={customFieldValue-${index}}
+                                id={`customFieldValue-${index}`}
                                 checked={field.value}
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.checked)}
                                 className="form-check-input"
@@ -257,12 +289,12 @@ function Items() {
                         ) : (
                             <input
                                 type={field.type === 'number' ? 'number' : 'text'}
-                                id={customFieldValue-${index}}
+                                id={`customFieldValue-${index}`}
                                 value={field.value}
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
                                 className="form-control"
                             />
-							)}
+                        )}
                     </div>
                 ))}
 

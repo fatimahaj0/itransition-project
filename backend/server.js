@@ -23,6 +23,9 @@ db.query("SELECT 1", (err, result) => {
     console.log("Database connection successful");
   }
 });
+
+
+
 const validateCustomFields = (customFields) => {
     const fieldTypes = {
         int: 0,
@@ -140,6 +143,7 @@ app.get('/categories', (req, res) => {
     res.send(result);
   });
 });
+
 app.post('/collection/:collectionId/items', (req, res) => {
     const collectionId = req.params.collectionId;
     const { name, tags, customFields } = req.body;
@@ -151,7 +155,7 @@ app.post('/collection/:collectionId/items', (req, res) => {
     console.log("Received request to create item:", { name, tags, collectionId });
 
     const sql = "INSERT INTO item (name, tags, collectionId, customFields) VALUES (?, ?, ?, ?)";
-    const values = [name, tags, collectionId, JSON.stringify(customFields)];
+    const values = [name, JSON.stringify(tags), collectionId, JSON.stringify(customFields)]; 
 
     db.query(sql, values, (err, result) => {
         if (err) {
@@ -171,6 +175,34 @@ app.post('/collection/:collectionId/items', (req, res) => {
         });
     });
 });
+
+app.get('/tags', (req, res) => {
+    const { query } = req.query;
+console.log("Received request for tags with query:", query);
+
+const tags = query.split(',').map(tag => tag.trim());
+const placeholders = tags.map(() => '?').join(','); 
+const sql = `SELECT DISTINCT tags FROM item WHERE tags IN (${placeholders})`; 
+const values = tags;
+
+
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error("Error fetching tags:", err);
+            return res.status(500).json({ error: "Error fetching tags" });
+        }
+        const fetchedTags = result.map(item => item.tags);
+        console.log("Fetched tags:", fetchedTags);
+        res.json(fetchedTags);
+    });
+});
+
+
+
+
+
+
+
 
 
 app.listen(8081, () => {
