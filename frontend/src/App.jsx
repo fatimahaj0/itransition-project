@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/navbar/Navbar';
-import { BrowserRouter , Routes, Route } from "react-router-dom";
+import { BrowserRouter , Routes, Route, Navigate } from "react-router-dom"; 
 import { jwtDecode } from 'jwt-decode';
-import { Navigate } from 'react-router-dom';
-import { AuthProvider } from './components/AuthContext';
+import { AuthProvider, useAuth } from './components/AuthContext'; 
 import AdminPanel from './pages/adminpanel/Adminpanel';
 import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/Signin";
 import SignUp from "./pages/signup/SignUp";
 import Items from "./pages/items/Items";
 import Collection from "./pages/collection/Collection";
-
-
+import Users from "./pages/Users"; 
+import UserCollection from "./pages/collection/UserCollection";
 const isAdmin = () => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -22,8 +21,23 @@ const isAdmin = () => {
   return false;
 };
 
+const isUser = () => {
+  const token = localStorage.getItem('token');
+  return !!token;
+};
+
 const AdminRoute = ({ children }) => {
+  console.log("Checking authentication for admin route...");
+  const { isAuthenticated } = useAuth();
+  console.log("IsAuthenticated:", isAuthenticated);
   return isAdmin() ? children : <Navigate to="/" />;
+};
+
+const PrivateRoute = ({ children }) => {
+  console.log("Checking authentication for private route...");
+  const { isAuthenticated } = useAuth();
+  console.log("IsAuthenticated:", isAuthenticated);
+  return isUser() ? children : <Navigate to="/" />;
 };
 
 function App() {
@@ -38,22 +52,23 @@ function App() {
   }, [theme]);
 
   return (
- 
-      <AuthProvider>
-        <div className="app">
-          <Navbar theme={theme} setTheme={setTheme} />
-          <Routes>
-            <Route path="/" element={<Home />}></Route>
-            <Route path="/signin" element={<SignIn />}></Route>
-            <Route path="/signup" element={<SignUp/>}></Route>
-            <Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
-            <Route path="/signup" element={<SignUp/>}></Route> 
-            <Route path="/collection/:collectionId/items" element ={<Items />}> </Route>
-            <Route path="/create"  element ={<Collection />} > </Route>
-          </Routes>
-        </div>
-      </AuthProvider>
-
+    <AuthProvider>
+      <div className="app">
+        <Navbar theme={theme} setTheme={setTheme} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+          <Route path="/collection/:collectionId/items" element={<Items />} />
+          <Route path="/create" element={<Collection />} />
+          <Route path="/users-with-collections" element={<Users />} /> 
+		  <Route path="/my-collection" element={<PrivateRoute><UserCollection /></PrivateRoute>} />
+		  <Route path="/create/:collectionId" element={<Collection />} /> 
+		   
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 }
 

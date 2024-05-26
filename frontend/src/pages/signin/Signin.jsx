@@ -17,26 +17,28 @@ function SignIn() {
   axios
     .post("http://localhost:8081/signin", { email, password })
     .then((result) => {
-	  if (result.data.success) {
-			localStorage.setItem('token', result.data.token);
-			toggleAuth(true);
-			const navigateTo = result.data.isAdmin ? "/admin-panel" : "/";
-			navigate(navigateTo);
+      console.log("Sign-in response:", result.data);
+      if (result.data.success) {
+        localStorage.setItem('token', result.data.token);
+        toggleAuth(true);
+        const navigateTo = result.data.isAdmin ? "/admin-panel" : "/";
+        navigate(navigateTo);
       } else {
-        setErrorMessage(response.data.error || "Sign-in was unsuccessful.");
+        setErrorMessage(result.data.error || "Sign-in was unsuccessful.");
       }
     })
-   .catch((error) => {
+    .catch((error) => {
       if (error.response) {
         setErrorMessage(error.response.data.error || "An unknown error occurred.");
       } else if (error.request) {
         setErrorMessage("No response from server. Please try again later.");
       } else {
-		  console.log(error);
+        console.log(error);
         setErrorMessage("An error occurred. Please try again later.");
       }
     });
 };
+
 
   return (
 	<div className="container d-flex justify-content-center align-items-center vh-100">

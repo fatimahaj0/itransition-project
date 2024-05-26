@@ -98,6 +98,28 @@ app.get('/collection', (req, res) => {
   });
 });
 
+app.get('/my-collections', (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = decoded.id;
+
+    const sql = "SELECT * FROM collection WHERE userId = ?";
+    db.query(sql, [userId], (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Error occurred while fetching collections' });
+      } else {
+        res.json(results);
+      }
+    });
+  });
+});
+
 app.get('/collection/:id/items', (req, res) => {
   const collectionId = req.params.id;
   const sql = "SELECT * FROM item WHERE collectionId = ?";
@@ -109,10 +131,30 @@ app.get('/collection/:id/items', (req, res) => {
     return res.json(result);
   });
 });
+app.get('/users-with-collections', (req, res) => {
+  const sql = "SELECT u.id AS userId, u.username, c.id AS collectionId, c.name AS collectionName FROM user u LEFT JOIN collection c ON u.id = c.userId";
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error("Error fetching users with collections:", err);
+      return res.status(500).json({ error: "Error fetching users with collections" });
+    }
+   
+    const usersWithCollections = {};
+    result.forEach(row => {
+      const { userId, username, collectionId, collectionName } = row;
+      if (!usersWithCollections[userId]) {
+        usersWithCollections[userId] = { userId, username, collections: [] };
+      }
+      if (collectionId) {
+        usersWithCollections[userId].collections.push({ collectionId, collectionName });
+      }
+    });
+    res.json(Object.values(usersWithCollections));
+  });
+});
 
 app.post('/create', (req, res) => {
-  const { name, description, categoryId, image } = req.body;
-
+  const { name, description, categoryId, image, userId: providedUserId } = req.body;
   const token = req.headers.authorization.split(' ')[1];
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
@@ -120,7 +162,7 @@ app.post('/create', (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const userId = decoded.id;
+    const userId = decoded.isAdmin && providedUserId ? providedUserId : decoded.id;
 
     const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
     const values = [name, description, categoryId, image, userId];
@@ -135,6 +177,7 @@ app.post('/create', (req, res) => {
     });
   });
 });
+
 
 app.get('/categories', (req, res) => {
   const sql = 'SELECT * FROM category';
@@ -197,6 +240,39 @@ const values = tags;
     });
 });
 
+
+
+app.put('/collection/:id', (req, res) => {
+  const collectionId = req.params.id;
+  const { name, description, categoryId, image } = req.body;
+
+  console.log("Request body:", req.body); 
+
+  const sql = "UPDATE collection SET name = ?, description = ?, categoryId = ?, image = ? WHERE id = ?";
+  const values = [name, description, category, image, collectionId];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error updating collection:", err);
+      return res.status(500).json({ error: "Error updating collection" });
+    }
+    res.json({ success: true, message: "Collection updated successfully" });
+  });
+});
+
+
+app.delete('/collection/:id', (req, res) => {
+  const collectionId = req.params.id;
+
+  const sql = "DELETE FROM collection WHERE id = ?";
+  db.query(sql, [collectionId], (err, result) => {
+    if (err) {
+      console.error("Error deleting collection:", err);
+      return res.status(500).json({ error: "Error deleting collection" });
+    }
+    res.json({ success: true, message: "Collection deleted successfully" });
+  });
+});
 
 
 
