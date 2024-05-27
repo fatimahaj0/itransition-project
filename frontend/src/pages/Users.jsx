@@ -53,7 +53,7 @@ const toggleAdminStatus = async (userId) => {
     
     if (userId === jwtDecode(token).id && newAdminStatus === 0) {
       revokeAdminStatus();
-      navigate('/'); // Navigate to the home page
+      navigate('/');
     }
   } catch (error) {
     console.error('Error updating admin status:', error);

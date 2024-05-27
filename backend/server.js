@@ -122,6 +122,8 @@ app.get('/my-collections', (req, res) => {
   });
 });
 
+
+
 app.get('/collection/:id/items', (req, res) => {
   const collectionId = req.params.id;
   const sql = "SELECT * FROM item WHERE collectionId = ?";
@@ -157,7 +159,7 @@ app.get('/users-with-collections', (req, res) => {
 
 
 app.put('/users/:userId/admin', async (req, res) => {
-  const userId = req.params.userId; // Change 'id' to 'userId'
+  const userId = req.params.userId;
   const { admin } = req.body;
 
   console.log("Request Body:", req.body);
@@ -293,23 +295,25 @@ const values = tags;
 
 
 
-app.put('/collection/:id', (req, res) => {
+
+
+app.get('/collection/:id', (req, res) => {
   const collectionId = req.params.id;
-  const { name, description, categoryId, image } = req.body;
-
-  console.log("Request body:", req.body); 
-
-  const sql = "UPDATE collection SET name = ?, description = ?, categoryId = ?, image = ? WHERE id = ?";
-  const values = [name, description, category, image, collectionId];
-
-  db.query(sql, values, (err, result) => {
+  const sql = "SELECT * FROM collection WHERE id = ?";
+  db.query(sql, [collectionId], (err, result) => {
     if (err) {
-      console.error("Error updating collection:", err);
-      return res.status(500).json({ error: "Error updating collection" });
+      console.error("Error fetching collection:", err);
+      return res.status(500).json({ error: "Error fetching collection" });
     }
-    res.json({ success: true, message: "Collection updated successfully" });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Collection not found" });
+    }
+    res.json(result[0]);
   });
 });
+
+
+
 
 
 app.delete('/collection/:id', (req, res) => {

@@ -27,12 +27,12 @@ const UserCollection = () => {
   }, []);
 
   const handleEdit = (collectionId) => {
-    // Navigate to the create collection page with collection ID included for edit mode
-    navigate(`/create/${collectionId}`);
+    
+    navigate(`/edit/${collectionId}`);
   };
 
   const handleDelete = async (collectionId) => {
-    // Send delete request to backend to delete the collection
+    
     const token = localStorage.getItem('token');
     try {
       await axios.delete(`http://localhost:8081/collection/${collectionId}`, {
@@ -40,7 +40,7 @@ const UserCollection = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      // After successful deletion, update the collections state to reflect changes
+   
       setCollections(prevCollections => prevCollections.filter(collection => collection.id !== collectionId));
     } catch (error) {
       console.error('Error deleting collection:', error);

@@ -12,6 +12,7 @@ import Items from "./pages/items/Items";
 import Collection from "./pages/collection/Collection";
 import Users from "./pages/Users"; 
 import UserCollection from "./pages/collection/UserCollection";
+import EditCollection from "./pages/collection/EditCollection";
 const isAdmin = () => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -64,7 +65,8 @@ function App() {
           <Route path="/create" element={<Collection />} />
           <Route path="/users-with-collections" element={ <AdminRoute><Users /> </AdminRoute>} /> 
 		  <Route path="/my-collection" element={<PrivateRoute><UserCollection /></PrivateRoute>} />
-		  <Route path="/create/:collectionId" element={<Collection />} /> 
+		 <Route path="/edit/:collectionId" element={ <PrivateRoute> <EditCollection /> </PrivateRoute>} />
+
 		   
         </Routes>
       </div>
