@@ -1,10 +1,10 @@
 const express = require("express");
 const env = require('dotenv').config();
-const mysql = require("mysql2");
+
 const cors = require("cors");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const mysql = require('mysql2');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -16,6 +16,7 @@ const db = mysql.createConnection({
   password: '12345',
   database: 'itransition',
 });
+
 db.query("SELECT 1", (err, result) => {
   if (err) {
     console.error("Error connecting to database:", err);
@@ -87,6 +88,7 @@ app.post('/signin', (req, res) => {
   });
 });
 
+
 app.get('/collection', (req, res) => {
   const sql = "SELECT * FROM collection";
   db.query(sql, (err, result) => {
@@ -132,7 +134,7 @@ app.get('/collection/:id/items', (req, res) => {
   });
 });
 app.get('/users-with-collections', (req, res) => {
-  const sql = "SELECT u.id AS userId, u.username, c.id AS collectionId, c.name AS collectionName FROM user u LEFT JOIN collection c ON u.id = c.userId";
+  const sql = "SELECT u.id AS userId, u.username, u.admin, c.id AS collectionId, c.name AS collectionName FROM user u LEFT JOIN collection c ON u.id = c.userId";
   db.query(sql, (err, result) => {
     if (err) {
       console.error("Error fetching users with collections:", err);
@@ -141,15 +143,64 @@ app.get('/users-with-collections', (req, res) => {
    
     const usersWithCollections = {};
     result.forEach(row => {
-      const { userId, username, collectionId, collectionName } = row;
+      const { userId, username, admin, collectionId, collectionName } = row;
       if (!usersWithCollections[userId]) {
-        usersWithCollections[userId] = { userId, username, collections: [] };
+        usersWithCollections[userId] = { userId, username, admin, collections: [] };
       }
       if (collectionId) {
         usersWithCollections[userId].collections.push({ collectionId, collectionName });
       }
     });
     res.json(Object.values(usersWithCollections));
+  });
+});
+
+
+app.put('/users/:userId/admin', async (req, res) => {
+  const userId = req.params.userId; // Change 'id' to 'userId'
+  const { admin } = req.body;
+
+  console.log("Request Body:", req.body);
+
+  const token = req.headers.authorization;
+  console.log("Authorization Header:", token);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authorization header missing' });
+  }
+
+  const tokenParts = token.split(' ');
+  if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+    return res.status(401).json({ error: 'Invalid authorization header format' });
+  }
+
+  const tokenValue = tokenParts[1];
+  jwt.verify(tokenValue, process.env.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      console.error('Error verifying token:', err);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    console.log("Decoded Token:", decoded);
+
+    if (!decoded.isAdmin) {
+      return res.status(403).json({ error: 'Only admin users can perform this action' });
+    }
+
+    try {
+      const sql = "UPDATE user SET admin = ? WHERE id = ?";
+      const values = [admin, userId]; 
+      const [result] = await db.promise().execute(sql, values);
+
+      if (result.affectedRows > 0) {
+        return res.json({ success: true, message: `User ${userId} admin status updated successfully` }); // Change 'id' to 'userId'
+      } else {
+        return res.status(404).json({ error: `User with ID ${userId} not found` }); // Change 'id' to 'userId'
+      }
+    } catch (error) {
+      console.error('Error updating admin status:', error);
+      return res.status(500).json({ error: 'Failed to update admin status' });
+    }
   });
 });
 

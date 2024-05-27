@@ -3,45 +3,46 @@ import { Link, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
 import { useAuth } from '../../components/AuthContext';
 import axios from 'axios';
-import "./style.css"
+import "./style.css";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState();
+  const [errorMessage, setErrorMessage] = useState("");
   const { toggleAuth } = useAuth();
   const navigate = useNavigate();
-  
- const handleSubmit = (e) => {
-  e.preventDefault();
-  axios
-    .post("http://localhost:8081/signin", { email, password })
-    .then((result) => {
-      console.log("Sign-in response:", result.data);
-      if (result.data.success) {
-        localStorage.setItem('token', result.data.token);
+
+  const handleSignIn = async (email, password) => {
+    try {
+      const response = await axios.post("http://localhost:8081/signin", { email, password });
+      console.log("Sign-in response:", response.data);
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
         toggleAuth(true);
-        const navigateTo = result.data.isAdmin ? "/admin-panel" : "/";
+        const navigateTo = response.data.isAdmin ? "/admin-panel" : "/";
         navigate(navigateTo);
       } else {
-        setErrorMessage(result.data.error || "Sign-in was unsuccessful.");
+        setErrorMessage(response.data.error || "Sign-in was unsuccessful.");
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       if (error.response) {
         setErrorMessage(error.response.data.error || "An unknown error occurred.");
       } else if (error.request) {
         setErrorMessage("No response from server. Please try again later.");
       } else {
-        console.log(error);
+        console.error(error);
         setErrorMessage("An error occurred. Please try again later.");
       }
-    });
-};
+    }
+  };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleSignIn(email, password);
+  };
 
   return (
-	<div className="container d-flex justify-content-center align-items-center vh-100">
+    <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card shadow p-4" style={{ maxWidth: "400px" }}>
         <h2 className="text-center mb-4">Login</h2>
         <form onSubmit={handleSubmit}>
@@ -58,6 +59,7 @@ function SignIn() {
                 className="form-control"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
           </div>
@@ -73,13 +75,14 @@ function SignIn() {
                 className="form-control"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
           </div>
+          {errorMessage && <div className="text-danger mb-3">{errorMessage}</div>}
           <button type="submit" className="btn btn-dark w-100">
             Login
           </button>
-		   <span className = "text-danger">{errorMessage && <p>{errorMessage}</p>}</span>
         </form>
         <p className="mt-3 mb-0 text-center">Don't have an Account?</p>
         <Link
@@ -92,4 +95,5 @@ function SignIn() {
     </div>
   );
 }
+
 export default SignIn;

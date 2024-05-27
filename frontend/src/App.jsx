@@ -62,7 +62,7 @@ function App() {
           <Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/collection/:collectionId/items" element={<Items />} />
           <Route path="/create" element={<Collection />} />
-          <Route path="/users-with-collections" element={<Users />} /> 
+          <Route path="/users-with-collections" element={ <AdminRoute><Users /> </AdminRoute>} /> 
 		  <Route path="/my-collection" element={<PrivateRoute><UserCollection /></PrivateRoute>} />
 		  <Route path="/create/:collectionId" element={<Collection />} /> 
 		   
