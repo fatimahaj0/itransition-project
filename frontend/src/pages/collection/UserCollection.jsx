@@ -63,6 +63,8 @@ const UserCollection = () => {
                   <div className="d-flex justify-content-between">
                     <button onClick={() => handleEdit(collection.id)} className="btn btn-primary">Edit</button>
                     <button onClick={() => handleDelete(collection.id)} className="btn btn-danger">Delete</button>
+					<Link to="/create" className="btn btn-success mb-3">Create Collection</Link>
+
                   </div>
                 </div>
               </div>

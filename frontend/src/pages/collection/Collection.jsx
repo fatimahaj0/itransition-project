@@ -111,7 +111,8 @@ const Collection = () => {
             value={formData.categoryId} 
             onChange={handleChange} 
             className="form-control" 
-            required 
+			required
+            
           >
             {categories.map(item => (
               <option key={item.id} value={item.id}>{item.name}</option>
@@ -126,7 +127,7 @@ const Collection = () => {
             name="image" 
             onChange={handleFileChange} 
             className="form-control" 
-            required 
+            
           />
         </div>
         {imageUrl && (

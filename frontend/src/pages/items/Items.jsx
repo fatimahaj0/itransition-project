@@ -163,6 +163,36 @@ useEffect(() => {
     }
 };
 
+const handleEdit = (itemId) => {
+    // Implement logic to navigate to the edit page for the item with the specified itemId
+};
+
+const handleDelete = async (itemId) => {
+    try {
+        const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+        console.log('Deleting item with ID:', itemId);
+
+        const response = await fetch(`http://localhost:8081/items/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete item');
+        }
+
+        console.log('Item deleted successfully:', itemId);
+
+        // Remove the deleted item from the items list
+        setItems(items.filter(item => item.id !== itemId));
+    } catch (error) {
+        console.error('Error deleting item:', error);
+        setError('Failed to delete item: ' + error.message);
+    }
+};
+
 
     return (
         <div className="container">
@@ -170,20 +200,25 @@ useEffect(() => {
             {error && <div className="alert alert-danger">{error}</div>}
             <ul>
                 {items.map((item) => (
-                    <li key={item.id}>
-                        <div>Name: {item.name}</div>
-                        <div>Tags: {item.tags}</div>
-                        {item.customFields && (
-                            <ul>
-                                {item.customFields.map((field, index) => (
-                                    <li key={index}>
-                                        <div>{field.name}: {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+    <li key={item.id}>
+        <div>Name: {item.name}</div>
+        <div>Tags: {item.tags}</div>
+        {item.customFields && (
+            <ul>
+                {item.customFields.map((field, index) => (
+                    <li key={index}>
+                        <div>{field.name}: {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
                     </li>
                 ))}
+            </ul>
+        )}
+        <div>
+            <button onClick={() => handleEdit(item.id)}>Edit</button>
+            <button onClick={() => handleDelete(item.id)}>Delete</button>
+        </div>
+    </li>
+))}
+
             </ul>
 
             <h2 className="mt-4 mb-3 text-center">Create an item</h2>

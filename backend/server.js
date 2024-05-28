@@ -207,7 +207,7 @@ app.put('/users/:userId/admin', async (req, res) => {
 });
 
 app.post('/create', (req, res) => {
-  const { name, description, categoryId, image, userId: providedUserId } = req.body;
+  const { name, description, categoryId, image } = req.body;
   const token = req.headers.authorization.split(' ')[1];
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
@@ -215,21 +215,55 @@ app.post('/create', (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const userId = decoded.isAdmin && providedUserId ? providedUserId : decoded.id;
+    const userId = decoded.id;
+    const isAdmin = decoded.isAdmin;
 
-    const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
-    const values = [name, description, categoryId, image, userId];
+    // Function to create a collection
+    const createCollection = (name, description, categoryId, image, userId) => {
+      const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
+      const values = [name, description, categoryId, image, userId];
 
-    db.query(sql, values, (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ error: 'Error occurred while adding collection' });
-      } else {
-        res.send("Data added");
+      db.query(sql, values, (err, result) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ error: 'Error occurred while adding collection' });
+        } else {
+          res.send("Data added");
+        }
+      });
+    };
+
+    // Check if the user is an admin or the owner of the collection
+    if (isAdmin) {
+      // Admins can create collections for any user
+      createCollection(name, description, categoryId, image, userId);
+    } else {
+      // Check if the user is the owner of the collection
+      const providedUserId = req.body.userId; // Assuming userId is provided in the request body
+      if (userId !== providedUserId) {
+        return res.status(403).json({ error: 'Forbidden' });
       }
-    });
+
+      // User is the owner, allow them to create the collection
+      createCollection(name, description, categoryId, image, userId);
+    }
   });
 });
+
+
+function createCollection(name, description, categoryId, image, userId, res) {
+  const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
+  const values = [name, description, categoryId, image, userId];
+
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error occurred while adding collection:", err);
+      return res.status(500).json({ error: 'Error occurred while adding collection' });
+    }
+    res.send("Collection created successfully");
+  });
+}
+
 
 
 app.get('/categories', (req, res) => {
@@ -317,6 +351,76 @@ function createItem(collectionId, name, tags, customFields, res) {
     });
 }
 
+
+
+app.delete('/items/:itemId', (req, res) => {
+    const itemId = req.params.itemId;
+    const token = req.headers.authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            console.error('Error verifying token:', err);
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Logging decoded token for debugging
+        console.log('Decoded token:', decoded);
+
+        // Extract userId from the decoded token
+        const userId = decoded.id;
+
+        // Check if the user is an admin
+        const isAdmin = decoded.isAdmin;
+
+        // Logging user information for debugging
+        console.log('User ID:', userId);
+        console.log('Is Admin:', isAdmin);
+
+        // If the user is not an admin, they must be the owner of the item to delete it
+        if (!isAdmin) {
+            const sql = "SELECT userId FROM item WHERE id = ?";
+            const values = [itemId];
+
+            db.query(sql, values, (err, result) => {
+                if (err) {
+                    console.error('Error checking item ownership:', err);
+                    return res.status(500).json({ error: 'Error occurred while checking item ownership' });
+                } else {
+                    // If the item is not found or the user is not the owner, return an error
+                    if (result.length === 0 || result[0].userId !== userId) {
+                        console.log('User is not the owner of the item.');
+                        return res.status(403).json({ error: 'Forbidden: You are not authorized to delete this item' });
+                    } else {
+                        console.log('User is the owner of the item.');
+                        // If the user is the owner, delete the item
+                        deleteItem(itemId, res);
+                    }
+                }
+            });
+        } else {
+            // If the user is an admin, they can delete any item
+            deleteItem(itemId, res);
+        }
+    });
+});
+
+function deleteItem(itemId, res) {
+    const sql = "DELETE FROM item WHERE id = ?";
+    const values = [itemId];
+
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error deleting item:', err);
+            return res.status(500).json({ error: 'Error occurred while deleting item', details: err.message });
+        } else {
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Item not found' });
+            } else {
+                return res.status(200).json({ message: 'Item deleted successfully' });
+            }
+        }
+    });
+}
 
 
 

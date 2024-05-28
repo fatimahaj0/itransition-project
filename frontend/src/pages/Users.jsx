@@ -10,56 +10,50 @@ const Users = () => {
   const { revokeAdminStatus } = useAuth();
 
   useEffect(() => {
-  const fetchUsersWithCollections = async () => {
-    try {
-      const response = await axios.get('http://localhost:8081/users-with-collections');
-      console.log('Fetched users with collections:', response.data);
-      setUsersWithCollections(response.data);
-    } catch (error) {
-      console.error('Error fetching users with collections:', error);
-    }
-  };
+    const fetchUsersWithCollections = async () => {
+      try {
+        const response = await axios.get('http://localhost:8081/users-with-collections');
+        console.log('Fetched users with collections:', response.data);
+        setUsersWithCollections(response.data);
+      } catch (error) {
+        console.error('Error fetching users with collections:', error);
+      }
+    };
 
-  fetchUsersWithCollections();
-}, []);
-
+    fetchUsersWithCollections();
+  }, []);
 
   const handleCreateCollection = (userId) => {
-    navigate(`/create?userId=${userId}`);
+    navigate(`/create?userId=${userId}`); // Navigate to create form page with user ID
   };
 
-const toggleAdminStatus = async (userId) => {
-  try {
-    const token = localStorage.getItem('token');
-    const user = usersWithCollections.find(user => user.userId === userId);
-    const newAdminStatus = user.admin === 1 ? 0 : 1;
-    await axios.put(
-      `http://localhost:8081/users/${userId}/admin`,
-      { admin: newAdminStatus },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+  const toggleAdminStatus = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const user = usersWithCollections.find((user) => user.userId === userId);
+      const newAdminStatus = user.admin === 1 ? 0 : 1;
+      await axios.put(
+        `http://localhost:8081/users/${userId}/admin`,
+        { admin: newAdminStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUsersWithCollections((prevState) =>
+        prevState.map((user) => (user.userId === userId ? { ...user, admin: newAdminStatus } : user))
+      );
+
+      if (userId === jwtDecode(token).id && newAdminStatus === 0) {
+        revokeAdminStatus();
+        navigate('/');
       }
-    );
-
-  
-    setUsersWithCollections(prevState =>
-      prevState.map(user =>
-        user.userId === userId ? { ...user, admin: newAdminStatus } : user
-      )
-    );
-
-    
-    if (userId === jwtDecode(token).id && newAdminStatus === 0) {
-      revokeAdminStatus();
-      navigate('/');
+    } catch (error) {
+      console.error('Error updating admin status:', error);
     }
-  } catch (error) {
-    console.error('Error updating admin status:', error);
-  }
-};
-
+  };
 
   const isAdminUser = () => {
     const token = localStorage.getItem('token');
@@ -85,13 +79,13 @@ const toggleAdminStatus = async (userId) => {
           </tr>
         </thead>
         <tbody>
-          {usersWithCollections.map(user => (
+          {usersWithCollections.map((user) => (
             <tr key={user.userId}>
               <td>{user.userId}</td>
               <td>{user.username}</td>
               <td>
                 <ul>
-                  {user.collections.map(collection => (
+                  {user.collections.map((collection) => (
                     <li key={collection.collectionId}>{collection.collectionName}</li>
                   ))}
                 </ul>
