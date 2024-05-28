@@ -206,73 +206,7 @@ app.put('/users/:userId/admin', async (req, res) => {
   });
 });
 
-app.post('/create', (req, res) => {
-  const { name, description, categoryId, image } = req.body;
-  const token = req.headers.authorization.split(' ')[1];
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const userId = decoded.id;
-    const isAdmin = decoded.isAdmin;
-
-    // Function to create a collection
-    const createCollection = (name, description, categoryId, image, userId) => {
-      const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
-      const values = [name, description, categoryId, image, userId];
-
-      db.query(sql, values, (err, result) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ error: 'Error occurred while adding collection' });
-        } else {
-          res.send("Data added");
-        }
-      });
-    };
-
-    // Check if the user is an admin or the owner of the collection
-    if (isAdmin) {
-      // Admins can create collections for any user
-      createCollection(name, description, categoryId, image, userId);
-    } else {
-      // Check if the user is the owner of the collection
-      const providedUserId = req.body.userId; // Assuming userId is provided in the request body
-      if (userId !== providedUserId) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-
-      // User is the owner, allow them to create the collection
-      createCollection(name, description, categoryId, image, userId);
-    }
-  });
-});
-
-
-function createCollection(name, description, categoryId, image, userId, res) {
-  const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
-  const values = [name, description, categoryId, image, userId];
-
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("Error occurred while adding collection:", err);
-      return res.status(500).json({ error: 'Error occurred while adding collection' });
-    }
-    res.send("Collection created successfully");
-  });
-}
-
-
-
-app.get('/categories', (req, res) => {
-  const sql = 'SELECT * FROM category';
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.send(result);
-  });
-});
 
 app.get('/collection/:id/items', (req, res) => {
   const collectionId = req.params.id;
@@ -484,7 +418,39 @@ app.delete('/collection/:id', (req, res) => {
 
 
 
+app.post('/create', (req, res) => {
+  const { name, description, categoryId, image } = req.body;
 
+  const token = req.headers.authorization.split(' ')[1];
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = decoded.id;
+
+    const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
+    const values = [name, description, categoryId, image, userId];
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Error occurred while adding collection' });
+      } else {
+        res.send("Data added");
+      }
+    });
+  });
+});
+
+app.get('/categories', (req, res) => {
+  const sql = 'SELECT * FROM category';
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    res.send(result);
+  });
+});
 
 
 

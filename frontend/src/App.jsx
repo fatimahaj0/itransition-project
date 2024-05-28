@@ -67,6 +67,7 @@ function App() {
           <Route path="/create" element={<Collection />} />
           <Route path="/users-with-collections" element={ <AdminRoute><Users /> </AdminRoute>} /> 
 		  <Route path="/my-collection" element={<PrivateRoute><UserCollection /></PrivateRoute>} />
+		
 		 <Route path="/edit/:collectionId" element={ <PrivateRoute> <EditCollection /> </PrivateRoute>} />
 
 		   
