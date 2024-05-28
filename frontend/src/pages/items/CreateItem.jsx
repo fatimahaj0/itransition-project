@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-function Items() {
+function CreateItem() {
     const { collectionId } = useParams();
-    const [items, setItems] = useState([]);
     const [itemData, setItemData] = useState({
         name: '',
         tags: '',
@@ -18,57 +17,15 @@ function Items() {
         boolean: 0
     });
     const [tagSuggestions, setTagSuggestions] = useState([]);
-
-    useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch items');
-                }
-                const responseData = await response.json();
-                setItems(responseData);
-                setError(null);
-            } catch (error) {
-                console.error('Error fetching items:', error);
-                setError('Failed to fetch items');
-            }
-        };
-
-        fetchItems();
-    }, [collectionId]);
-
-
-useEffect(() => {
-    if (itemData.tags.trim() !== '') {
-        const fetchTags = async () => {
-            try {
-                const response = await fetch(`http://localhost:8081/tags?query=${itemData.tags}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch tags');
-                }
-                const tagsData = await response.json();
-                setTagSuggestions(tagsData);
-                console.log('Tags fetched:', tagsData);
-            } catch (error) {
-                console.error('Error fetching tags:', error);
-            }
-        };
-
-        fetchTags();
-    }
-}, [itemData.tags]);
-
-
-
-   
+    const navigate = useNavigate();
 
     const handleChange = (event) => {
         setItemData(prevItemData => ({
-        ...prevItemData,
-        [event.target.name]: event.target.value,
-    }));
-};
+            ...prevItemData,
+            [event.target.name]: event.target.value,
+        }));
+    };
+
     const handleCustomFieldNameChange = (index, value) => {
         const updatedCustomFields = [...customFields];
         updatedCustomFields[index].name = value;
@@ -121,73 +78,38 @@ useEffect(() => {
         }
     };
 
-   const handleSubmit = async (event) => {
-    event.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-    const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+        const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
 
-    try {
-        const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-            },
-            body: JSON.stringify({ ...itemData, customFields }),
-        });
+        try {
+            const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                },
+                body: JSON.stringify({ ...itemData, customFields }),
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to create item');
+            if (!response.ok) {
+                throw new Error('Failed to create item');
+            }
+
+            const responseData = await response.json();
+            console.log('New item created:', responseData);
+            navigate(`/collection/${collectionId}/items`); // Navigate back to items page
+        } catch (error) {
+            console.error('Error creating item:', error);
+            setError('Failed to create item: ' + error.message);
         }
-
-        const responseData = await response.json();
-        console.log('New item created:', responseData);
-        setItems([...items, responseData]);
-        setItemData({
-            name: '',
-            tags: '',
-        });
-        setCustomFields([]);
-        setError(null);
-     
-        setFieldCounts({
-            string: 0,
-            number: 0,
-            multiline: 0,
-            date: 0,
-            boolean: 0
-        });
-    } catch (error) {
-        console.error('Error creating item:', error);
-        setError('Failed to create item: ' + error.message);
-    }
-};
-
+    };
 
     return (
         <div className="container">
-            <h2>Items for Collection ID: {collectionId}</h2>
+            <h2>Create an item for Collection ID: {collectionId}</h2>
             {error && <div className="alert alert-danger">{error}</div>}
-            <ul>
-                {items.map((item) => (
-                    <li key={item.id}>
-                        <div>Name: {item.name}</div>
-                        <div>Tags: {item.tags}</div>
-                        {item.customFields && (
-                            <ul>
-                                {item.customFields.map((field, index) => (
-                                    <li key={index}>
-                                        <div>{field.name}: {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </li>
-                ))}
-            </ul>
-
-            <h2 className="mt-4 mb-3 text-center">Create an item</h2>
-
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">
@@ -208,24 +130,24 @@ useEffect(() => {
                         Tags:
                     </label>
     
-<input
-    type="text"
-    id="tags"
-    name="tags"
-    value={itemData.tags}
-    onChange={handleChange}
-    className="form-control"
-    required
-/>
+                    <input
+                        type="text"
+                        id="tags"
+                        name="tags"
+                        value={itemData.tags}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                    />
 
-<div className="autocomplete-dropdown">
-        {tagSuggestions.length > 0 && tagSuggestions.map((tag) => (
-            <div key={tag.id}>
-                {tag.name}
-            </div>
-        ))}
-    </div>
-</div>
+                    <div className="autocomplete-dropdown">
+                        {tagSuggestions.length > 0 && tagSuggestions.map((tag) => (
+                            <div key={tag.id}>
+                                {tag.name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
                   
                 {customFields.map((field, index) => (
                     <div key={index}>
@@ -326,4 +248,4 @@ useEffect(() => {
     );
 }
 
-export default Items;
+export default CreateItem;

@@ -240,10 +240,55 @@ app.get('/categories', (req, res) => {
   });
 });
 
+app.get('/collection/:id/items', (req, res) => {
+  const collectionId = req.params.id;
+  const sql = "SELECT * FROM item WHERE collectionId = ?";
+  db.query(sql, [collectionId], (err, result) => {
+    if (err) {
+      console.error("Error in database query:", err);
+      return res.status(500).json({ error: "Error occurred while fetching items" });
+    }
+    return res.json(result);
+  });
+});
+
 app.post('/collection/:collectionId/items', (req, res) => {
     const collectionId = req.params.collectionId;
     const { name, tags, customFields } = req.body;
+    const token = req.headers.authorization.split(' ')[1];
 
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const userId = decoded.id;
+
+        // Check if the user is an admin
+        if (decoded.isAdmin) {
+            // User is an admin, proceed with item creation
+            createItem(collectionId, name, tags, customFields, res);
+        } else {
+            // User is not an admin, check if the user is the owner of the collection
+            const checkOwnerSql = `SELECT userId FROM collection WHERE id = ?`;
+            db.query(checkOwnerSql, [collectionId], (err, result) => {
+                if (err) {
+                    console.error("Error checking collection owner:", err);
+                    return res.status(500).json({ error: "Failed to check collection owner" });
+                }
+
+                if (result.length === 0 || result[0].userId !== userId) {
+                    return res.status(403).json({ error: 'Forbidden' });
+                }
+
+                // User is authorized, proceed with item creation
+                createItem(collectionId, name, tags, customFields, res);
+            });
+        }
+    });
+});
+
+function createItem(collectionId, name, tags, customFields, res) {
     if (!validateCustomFields(customFields)) {
         return res.status(400).json({ error: "Maximum of three fields allowed for each type" });
     }
@@ -251,7 +296,7 @@ app.post('/collection/:collectionId/items', (req, res) => {
     console.log("Received request to create item:", { name, tags, collectionId });
 
     const sql = "INSERT INTO item (name, tags, collectionId, customFields) VALUES (?, ?, ?, ?)";
-    const values = [name, JSON.stringify(tags), collectionId, JSON.stringify(customFields)]; 
+    const values = [name, JSON.stringify(tags), collectionId, JSON.stringify(customFields)];
 
     db.query(sql, values, (err, result) => {
         if (err) {
@@ -270,7 +315,11 @@ app.post('/collection/:collectionId/items', (req, res) => {
             return res.json(fetchResult[0]);
         });
     });
-});
+}
+
+
+
+
 
 app.get('/tags', (req, res) => {
     const { query } = req.query;

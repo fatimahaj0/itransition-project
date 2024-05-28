@@ -9,6 +9,7 @@ import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/Signin";
 import SignUp from "./pages/signup/SignUp";
 import Items from "./pages/items/Items";
+import CreateItem from "./pages/items/CreateItem";
 import Collection from "./pages/collection/Collection";
 import Users from "./pages/Users"; 
 import UserCollection from "./pages/collection/UserCollection";
@@ -62,6 +63,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/admin-panel" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/collection/:collectionId/items" element={<Items />} />
+		  <Route path="/collection/:collectionId/items/create" element={<CreateItem />} />
           <Route path="/create" element={<Collection />} />
           <Route path="/users-with-collections" element={ <AdminRoute><Users /> </AdminRoute>} /> 
 		  <Route path="/my-collection" element={<PrivateRoute><UserCollection /></PrivateRoute>} />
