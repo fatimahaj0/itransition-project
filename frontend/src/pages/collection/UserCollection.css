@@ -1,3 +1,6 @@
+.container {
+  margin-top: 20px;
+}
 
 .card {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -11,4 +14,9 @@
 .card-img-top {
   height: 200px;
   object-fit: cover;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
 }

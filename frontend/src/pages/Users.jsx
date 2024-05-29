@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 import { jwtDecode } from 'jwt-decode';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Users = () => {
   const [usersWithCollections, setUsersWithCollections] = useState([]);
@@ -13,7 +14,6 @@ const Users = () => {
     const fetchUsersWithCollections = async () => {
       try {
         const response = await axios.get('http://localhost:8081/users-with-collections');
-        console.log('Fetched users with collections:', response.data);
         setUsersWithCollections(response.data);
       } catch (error) {
         console.error('Error fetching users with collections:', error);
@@ -24,7 +24,7 @@ const Users = () => {
   }, []);
 
   const handleCreateCollection = (userId) => {
-    navigate(`/create?userId=${userId}`); // Navigate to create form page with user ID
+    navigate(`/create?userId=${userId}`);
   };
 
   const toggleAdminStatus = async (userId) => {
@@ -64,16 +64,13 @@ const Users = () => {
     return false;
   };
 
-  console.log('Rendered users:', usersWithCollections);
-
   return (
-    <div>
-      <h2>Users with Collections</h2>
-      <table key={usersWithCollections}>
+    <div className="container">
+      <h2 className="mt-4 mb-3">Users with Collections</h2>
+      <table className="table">
         <thead>
           <tr>
-            <th>User ID</th>
-            <th>Username</th>
+            <th>Name</th>
             <th>Collections</th>
             <th>Actions</th>
           </tr>
@@ -81,7 +78,6 @@ const Users = () => {
         <tbody>
           {usersWithCollections.map((user) => (
             <tr key={user.userId}>
-              <td>{user.userId}</td>
               <td>{user.username}</td>
               <td>
                 <ul>
@@ -91,10 +87,10 @@ const Users = () => {
                 </ul>
               </td>
               <td>
-                <button onClick={() => handleCreateCollection(user.userId)}>Create Collection</button>
+                <button onClick={() => handleCreateCollection(user.userId)} className="btn btn-dark me-2">Create Collection</button>
                 {isAdminUser() && (
-                  <button onClick={() => toggleAdminStatus(user.userId)}>
-                    {user.admin === 1 ? 'Revoke Admin' : 'Make Admin'}
+                  <button onClick={() => toggleAdminStatus(user.userId)} className="btn btn-dark">
+                    {user.admin === 1 ? 'Remove Admin' : 'Make Admin'}
                   </button>
                 )}
               </td>

@@ -1,60 +1,60 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../components/AuthContext';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './style.css';
 
 function Home() {
-    const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
+  const { isAuthenticated } = useAuth();
 
-    useEffect(() => {
-        const getData = async () => {
-    try {
+  useEffect(() => {
+    const getData = async () => {
+      try {
         const response = await fetch('http://localhost:8081/collection');
         if (!response.ok) {
-            throw new Error('Failed to fetch data');
+          throw new Error('Failed to fetch data');
         }
         const responseData = await response.json();
 
         if (!Array.isArray(responseData)) {
-            throw new Error('Invalid data format');
+          throw new Error('Invalid data format');
         }
 
         setData(responseData);
-    } catch (error) {
+      } catch (error) {
         console.error('Error fetching data:', error);
-    }
-};
-  getData();
-    }, []);
+      }
+    };
+    getData();
+  }, []);
 
-    return (
-        <div className="container">
-            <div className="table-responsive">
-                <table className="table table-striped table-bordered">
-                    <thead className="thead-dark">
-                        <tr>
-                            <th className="color-text color-bg">ID</th>
-                            <th className="color-text color-bg">Name</th>
-                            <th className="color-text color-bg">Description</th>
-                            <th className="color-text color-bg">Category</th>
-                            <th className="color-text color-bg">Image</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, index) => (
-                            <tr key={index}>
-                                <td className="color-text color-bg">{item.id}</td>
-                               <td className="color-text color-bg"> <Link to={`/collection/${item.id}/items`}> {item.name}</Link></td>
-
-                                <td className="color-text color-bg">{item.description}</td>
-                                <td className="color-text color-bg">{item.category}</td>
-                                <td className="color-text color-bg"> <img src={item.image} alt={item.name} style={{ maxWidth: '100px', height: 'auto' }} /></td>
-                                
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+  return (
+    <div className="container">
+      <div className="row">
+        {data.map((item, index) => (
+          <div className="col-md-4 mb-4" key={index}>
+            <div className="card">
+              <img src={item.image} className="card-img-top" alt={item.name} />
+              <div className="card-body">
+                <h5 className="card-title">{item.name}</h5>
+                <p className="card-text">{item.description}</p>
+                <p className="card-text"><strong>Category:</strong> {item.category}</p>
+                <Link to={`/collection/${item.id}/items`} className="btn btn-dark me-2">View Collection</Link>
+              </div>
             </div>
+          </div>
+        ))}
+      </div>
+      {isAuthenticated && (
+        <div className="row mt-4">
+          <div className="col text-center">
+            <Link to="/create" className="btn btn-dark">Create Collection</Link>
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default Home;

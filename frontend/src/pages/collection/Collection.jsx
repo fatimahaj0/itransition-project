@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Collection = () => {
   const [formData, setFormData] = useState({
@@ -11,74 +12,72 @@ const Collection = () => {
   const [file, setFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
   const [categories, setCategories] = useState([]);
-  
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
-	  axios.get('http://localhost:8081/categories')
-		.then(response => {
-		  setCategories(response.data);
-		})
-		.catch(error => console.error('Error:', error));
-}, []);
+    axios.get('http://localhost:8081/categories')
+      .then(response => {
+        setCategories(response.data);
+      })
+      .catch(error => console.error('Error:', error));
+  }, []);
 
   const handleChange = (event) => {
     setFormData(prev => ({
       ...prev,
-      [event.target.name]: event.target.value 
+      [event.target.name]: event.target.value
     }));
-	console.log(formData);
+    console.log(formData);
   };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
- 
-	  
-  const handleSubmit = async(event) => {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-	  const token = localStorage.getItem('token');
-	  const formDataWithFile = new FormData();
-	  formDataWithFile.append('file', file);
-	  formDataWithFile.append('upload_preset', 'oe8ddeiz');
+    const token = localStorage.getItem('token');
+    const formDataWithFile = new FormData();
+    formDataWithFile.append('file', file);
+    formDataWithFile.append('upload_preset', 'oe8ddeiz');
 
-	  try {
-		const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
-		const imageUrl = response.data.secure_url;
+    try {
+      const response = await axios.post('https://api.cloudinary.com/v1_1/dfvr0vyzm/image/upload', formDataWithFile);
+      const imageUrl = response.data.secure_url;
 
-		const collectionData = {
-		  ...formData,
-		  image: imageUrl
-		};
+      const searchParams = new URLSearchParams(location.search);
+      const userId = searchParams.get('userId'); // Get user ID from URL parameters
 
-		axios({
-		  method: 'post',
-		  url: 'http://localhost:8081/create',
-		  data: collectionData,
-		  headers: {
-			'Authorization': `Bearer ${token}` 
-		  }
-		})
-		.then(res => {
-		  console.log("Response from backend:", res);
-		})
-		.catch(err => console.log(err));
+      const collectionData = {
+        ...formData,
+        image: imageUrl,
+        userId // Include userId if available
+      };
 
-		setFormData({
-		  name: '',
-		  description: '',
-		  categoryId: '',
-		  image: ''
-		});
+      await axios.post('http://localhost:8081/create', collectionData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-		setImageUrl(imageUrl);
-	  } catch (error) {
-		console.error("Error uploading image to Cloudinary:", error);
-	  }
+      setFormData({
+        name: '',
+        description: '',
+        categoryId: '',
+        image: ''
+      });
+
+      setImageUrl(imageUrl);
+      navigate('/user-collections');
+    } catch (error) {
+      console.error("Error uploading image to Cloudinary:", error);
+    }
   }
 
   return (
     <div className="container">
       <h2 className="mt-4 mb-3 text-center">Create a Collection</h2>
-
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label">Name:</label>
@@ -105,7 +104,7 @@ const Collection = () => {
         </div>
         <div className="mb-3">
           <label htmlFor="category" className="form-label">Category:</label>
-		  <select 
+          <select 
             id="categoryId" 
             name="categoryId" 
             value={formData.categoryId} 

@@ -383,7 +383,27 @@ const values = tags;
 
 
 
+app.get('/users/:userId/collections', (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
 
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = req.params.userId;
+
+    const sql = "SELECT * FROM collection WHERE userId = ?";
+    db.query(sql, [userId], (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Error occurred while fetching collections' });
+      } else {
+        res.json(results);
+      }
+    });
+  });
+});
 app.get('/collection/:id', (req, res) => {
   const collectionId = req.params.id;
   const sql = "SELECT * FROM collection WHERE id = ?";
@@ -419,7 +439,7 @@ app.delete('/collection/:id', (req, res) => {
 
 
 app.post('/create', (req, res) => {
-  const { name, description, categoryId, image } = req.body;
+  const { name, description, categoryId, image, userId: specifiedUserId } = req.body;
 
   const token = req.headers.authorization.split(' ')[1];
 
@@ -428,7 +448,8 @@ app.post('/create', (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const userId = decoded.id;
+    const isAdmin = decoded.isAdmin;
+    const userId = isAdmin && specifiedUserId ? specifiedUserId : decoded.id;
 
     const sql = "INSERT INTO collection (name, description, categoryId, image, userId) VALUES (?, ?, ?, ?, ?)";
     const values = [name, description, categoryId, image, userId];
@@ -443,6 +464,7 @@ app.post('/create', (req, res) => {
     });
   });
 });
+
 
 app.get('/categories', (req, res) => {
   const sql = 'SELECT * FROM category';
