@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../components/AuthContext';
 
 const Collection = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const Collection = () => {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     axios.get('http://localhost:8081/categories')
@@ -28,7 +30,7 @@ const Collection = () => {
       ...prev,
       [event.target.name]: event.target.value
     }));
-    console.log(formData);
+    console.log('Form Data:', formData);
   };
 
   const handleFileChange = (event) => {
@@ -38,6 +40,15 @@ const Collection = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem('token');
+    
+   
+    console.log('isAuthenticated:', isAuthenticated);
+    if (!isAuthenticated) {
+    
+      navigate('/login');
+      return;
+    }
+
     const formDataWithFile = new FormData();
     formDataWithFile.append('file', file);
     formDataWithFile.append('upload_preset', 'oe8ddeiz');
@@ -47,12 +58,12 @@ const Collection = () => {
       const imageUrl = response.data.secure_url;
 
       const searchParams = new URLSearchParams(location.search);
-      const userId = searchParams.get('userId'); // Get user ID from URL parameters
+      const userId = searchParams.get('userId'); 
 
       const collectionData = {
         ...formData,
         image: imageUrl,
-        userId // Include userId if available
+        userId 
       };
 
       await axios.post('http://localhost:8081/create', collectionData, {

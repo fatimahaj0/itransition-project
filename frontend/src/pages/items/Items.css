@@ -1,0 +1,32 @@
+/* Items.css */
+
+.item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.item-actions {
+    margin-top: 10px;
+}
+
+.like-button, .comment-button {
+    padding: 5px 10px;
+    margin-right: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.like-button i, .comment-button i {
+    margin-right: 5px;
+}
+
+.like-button {
+    color: #dc3545; 
+}
+
+.comment-button {
+    color: #0d6efd; 
+}
+

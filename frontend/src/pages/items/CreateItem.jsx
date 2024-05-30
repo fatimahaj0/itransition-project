@@ -81,14 +81,14 @@ function CreateItem() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+        const token = localStorage.getItem('token');
 
         try {
             const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Authorization': `Bearer ${token}`, 
                 },
                 body: JSON.stringify({ ...itemData, customFields }),
             });
@@ -99,7 +99,7 @@ function CreateItem() {
 
             const responseData = await response.json();
             console.log('New item created:', responseData);
-            navigate(`/collection/${collectionId}/items`); // Navigate back to items page
+            navigate(`/collection/${collectionId}/items`); 
         } catch (error) {
             console.error('Error creating item:', error);
             setError('Failed to create item: ' + error.message);

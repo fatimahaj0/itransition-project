@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import './Items.css';
 
 function Items() {
     const { collectionId } = useParams();
@@ -18,16 +19,22 @@ function Items() {
         boolean: 0
     });
     const [tagSuggestions, setTagSuggestions] = useState([]);
+    const [userInfo, setUserInfo] = useState({ isAdmin: false, userId: null });
+	  const [dropdownVisible, setDropdownVisible] = useState(true);
 
-    useEffect(() => {
+  useEffect(() => {
         const fetchItems = async () => {
             try {
                 const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch items');
                 }
-                const responseData = await response.json();
-                setItems(responseData);
+        let responseData = await response.json();
+        responseData = responseData.map(item => ({
+          ...item,
+          customFields: Array.isArray(item.customFields) ? item.customFields : JSON.parse(item.customFields),
+        }));
+        setItems(responseData);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching items:', error);
@@ -38,12 +45,11 @@ function Items() {
         fetchItems();
     }, [collectionId]);
 
-
 useEffect(() => {
-    if (itemData.tags.trim() !== '') {
+    if (typeof itemData.tags === 'string' && itemData.tags.trim() !== '') {
         const fetchTags = async () => {
             try {
-                const response = await fetch(`http://localhost:8081/tags?query=${itemData.tags}`);
+                const response = await fetch(`http://localhost:8081/items/tags?query=${itemData.tags}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch tags');
                 }
@@ -61,14 +67,15 @@ useEffect(() => {
 
 
 
-   
 
     const handleChange = (event) => {
         setItemData(prevItemData => ({
-        ...prevItemData,
-        [event.target.name]: event.target.value,
-    }));
-};
+            ...prevItemData,
+            [event.target.name]: event.target.value,
+        }));
+		  setDropdownVisible(true);
+    };
+
     const handleCustomFieldNameChange = (index, value) => {
         const updatedCustomFields = [...customFields];
         updatedCustomFields[index].name = value;
@@ -84,7 +91,7 @@ useEffect(() => {
     const handleDateChange = (index, field, value) => {
         const updatedCustomFields = [...customFields];
         updatedCustomFields[index][field] = value;
-        
+
         const { year, month, day } = updatedCustomFields[index];
         updatedCustomFields[index].value = `${year}-${month}-${day}`;
         setCustomFields(updatedCustomFields);
@@ -95,7 +102,7 @@ useEffect(() => {
             setError('Maximum of three fields allowed for each type');
             return;
         }
-        
+
         setFieldCounts({
             ...fieldCounts,
             [fieldType]: fieldCounts[fieldType] + 1
@@ -113,7 +120,7 @@ useEffect(() => {
             case 'multiline':
                 return '';
             case 'date':
-                return ''; 
+                return '';
             case 'boolean':
                 return false;
             default:
@@ -121,111 +128,113 @@ useEffect(() => {
         }
     };
 
-   const handleSubmit = async (event) => {
-    event.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
-    const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+        const token = localStorage.getItem('token');
 
-    try {
-        const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-            },
-            body: JSON.stringify({ ...itemData, customFields }),
-        });
+        try {
+            const response = await fetch(`http://localhost:8081/collection/${collectionId}/items`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ ...itemData, customFields }),
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to create item');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create item');
+            }
+
+            const responseData = await response.json();
+            console.log('New item created:', responseData);
+            setItems([...items, responseData]);
+            setItemData({ name: '', tags: '' });
+            setCustomFields([]);
+            setError(null);
+
+            setFieldCounts({
+                string: 0,
+                number: 0,
+                multiline: 0,
+                date: 0,
+                boolean: 0
+            });
+        } catch (error) {
+            console.error('Error creating item:', error);
+            setError('Failed to create item: ' + error.message);
         }
+    };
 
-        const responseData = await response.json();
-        console.log('New item created:', responseData);
-        setItems([...items, responseData]);
-        setItemData({
-            name: '',
-            tags: '',
-        });
-        setCustomFields([]);
-        setError(null);
-     
-        setFieldCounts({
-            string: 0,
-            number: 0,
-            multiline: 0,
-            date: 0,
-            boolean: 0
-        });
-    } catch (error) {
-        console.error('Error creating item:', error);
-        setError('Failed to create item: ' + error.message);
-    }
-};
+    const handleEdit = (itemId) => {
+      
+    };
 
-const handleEdit = (itemId) => {
-    // Implement logic to navigate to the edit page for the item with the specified itemId
-};
+    const handleDelete = async (itemId) => {
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Deleting item with ID:', itemId);
 
-const handleDelete = async (itemId) => {
-    try {
-        const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
-        console.log('Deleting item with ID:', itemId);
+            const response = await fetch(`http://localhost:8081/items/${itemId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
 
-        const response = await fetch(`http://localhost:8081/items/${itemId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-            },
-        });
+            if (!response.ok) {
+                throw new Error('Failed to delete item');
+            }
 
-        if (!response.ok) {
-            throw new Error('Failed to delete item');
+            console.log('Item deleted successfully:', itemId);
+            setItems(items.filter(item => item.id !== itemId));
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            setError('Failed to delete item: ' + error.message);
         }
-
-        console.log('Item deleted successfully:', itemId);
-
-        // Remove the deleted item from the items list
-        setItems(items.filter(item => item.id !== itemId));
-    } catch (error) {
-        console.error('Error deleting item:', error);
-        setError('Failed to delete item: ' + error.message);
-    }
-};
-
+    };
 
     return (
-        <div className="container">
-            <h2>Items for Collection ID: {collectionId}</h2>
+        <div className="container my-5 color-bg color-text">
+            <h2 className="text-center mb-4 color-text">Items for Collection ID: {collectionId}</h2>
             {error && <div className="alert alert-danger">{error}</div>}
-            <ul>
+            <ul className="list-group mb-4">
                 {items.map((item) => (
-    <li key={item.id}>
-        <div>Name: {item.name}</div>
-        <div>Tags: {item.tags}</div>
-        {item.customFields && (
-            <ul>
-                {item.customFields.map((field, index) => (
-                    <li key={index}>
-                        <div>{field.name}: {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
+                    <li key={item.id} className="list-group-item mb-2 color-bg color-text">
+                        <div><strong>Name:</strong> {item.name}</div>
+                    <div><strong>Tags:</strong> {item.tags}</div>
+                        {item.customFields && (
+                            <ul className="list-unstyled mt-2">
+                                {item.customFields.map((field, index) => (
+                                    <li key={index}  className="mb-1">
+                                        <div><strong>{field.name}:</strong> {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <div className="item-actions">
+                       
+
+        <button onClick={() => handleEdit(item.id)} className="btn btn-dark me-2">Edit</button>
+        <button onClick={() => handleDelete(item.id)} className="btn btn-dark me-2">Delete</button>
+     
+
+
+                            <button className="btn btn-light like-button"><i className="fas fa-heart"></i> Like</button>
+                            <button className="btn btn-light comment-button"><i className="fas fa-comment"></i> Comment</button>
+                        </div>
                     </li>
                 ))}
             </ul>
-        )}
-        <div>
-            <button onClick={() => handleEdit(item.id)}>Edit</button>
-            <button onClick={() => handleDelete(item.id)}>Delete</button>
-        </div>
-    </li>
-))}
 
-            </ul>
-
-            <h2 className="mt-4 mb-3 text-center">Create an item</h2>
+         <h2 className="mt-4 mb-3 text-center color-text">Create an Item</h2>
 
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
+                <div className="row mb-3">
+				  <div className="col-md-6">
+                    <label htmlFor="name" className="form-label color-text">
                         Name:
                     </label>
                     <input
@@ -234,37 +243,47 @@ const handleDelete = async (itemId) => {
                         name="name"
                         value={itemData.name}
                         onChange={handleChange}
-                        className="form-control"
+                        className="form-control color-bg color-text"
                         required
                     />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="tags" className="form-label">
-                        Tags:
-                    </label>
-    
-<input
-    type="text"
-    id="tags"
-    name="tags"
-    value={itemData.tags}
-    onChange={handleChange}
-    className="form-control"
-    required
-/>
-
-<div className="autocomplete-dropdown">
-        {tagSuggestions.length > 0 && tagSuggestions.map((tag) => (
-            <div key={tag.id}>
-                {tag.name}
+                 <div className="col-md-6">
+                    <label htmlFor="tags" className="form-label color-text">Tags:</label>
+                      
+                 <input
+                        type="text"
+                        id="tags"
+                        name="tags"
+                        value={itemData.tags}
+                        onChange={handleChange}
+                        className="form-control color-bg color-text"
+            autoComplete = "off"
+                        required
+                    />
+                    <div className="autocomplete-dropdown cursor" style={{display: dropdownVisible ? 'block' : 'none'}}>
+            {tagSuggestions.length > 0 && tagSuggestions.map((tag, index) => (
+              <div 
+                key={index} 
+                className="px-2 py-1 border-bottom"
+                onClick={() => {
+                  setItemData(prevItemData => ({
+                    ...prevItemData,
+                    tags: tag.tags
+                  }));
+                  setDropdownVisible(false);
+                }}
+              >
+                {tag.tags}
+              </div>
+            ))}
+          </div>
+                </div>
             </div>
-        ))}
-    </div>
-</div>
-                  
+
                 {customFields.map((field, index) => (
-                    <div key={index}>
-                        <label htmlFor={`customFieldName-${index}`} className="form-label">
+                       <div className="row mb-3" key={index}>
+                    <div className="col-md-6">
+                        <label htmlFor={`customFieldName-${index}`} className="form-label color-text">
                             Custom Field Name:
                         </label>
                         <input
@@ -272,9 +291,11 @@ const handleDelete = async (itemId) => {
                             id={`customFieldName-${index}`}
                             value={field.name}
                             onChange={(e) => handleCustomFieldNameChange(index, e.target.value)}
-                            className="form-control"
+                            className="form-control color-bg color-text"
                         />
-                        <label htmlFor={`customFieldValue-${index}`} className="form-label">
+						  </div>
+                    <div className="col-md-6">
+                        <label htmlFor={`customFieldValue-${index}`} className="form-label color-text mt-2">
                             Custom Field Value:
                         </label>
                         {field.type === 'multiline' ? (
@@ -282,9 +303,10 @@ const handleDelete = async (itemId) => {
                                 id={`customFieldValue-${index}`}
                                 value={field.value}
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
-                                className="form-control"
+                               className="form-control color-bg color-text"
                             />
                         ) : field.type === 'boolean' ? (
+						 <div className="form-check mt-2">
                             <input
                                 type="checkbox"
                                 id={`customFieldValue-${index}`}
@@ -292,13 +314,15 @@ const handleDelete = async (itemId) => {
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.checked)}
                                 className="form-check-input"
                             />
+							  <label className="form-check-label color-text" htmlFor={`customFieldValue-${index}`}>Yes</label>
+                            </div>
                         ) : field.type === 'date' ? (
-                            <div>
+                               <div className="d-flex mt-2">
                                 <select
                                     value={field.month}
                                     onChange={(e) => handleDateChange(index, 'month', e.target.value)}
-                                    className="form-select"
-                                >
+                                  className="form-select me-2 color-bg color-text"
+                                >                             
                                     <option value="">Month</option>
                                     {[...Array(12).keys()].map(i => (
                                         <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{i + 1}</option>
@@ -307,7 +331,7 @@ const handleDelete = async (itemId) => {
                                 <select
                                     value={field.day}
                                     onChange={(e) => handleDateChange(index, 'day', e.target.value)}
-                                    className="form-select"
+                                      className="form-select me-2 color-bg color-text"
                                 >
                                     <option value="">Day</option>
                                     {[...Array(31).keys()].map(i => (
@@ -317,7 +341,7 @@ const handleDelete = async (itemId) => {
                                 <select
                                     value={field.year}
                                     onChange={(e) => handleDateChange(index, 'year', e.target.value)}
-                                    className="form-select"
+                                    className="form-select color-bg color-text"
                                 >
                                     <option value="">Year</option>
                                     {[...Array(50).keys()].map(i => (
@@ -331,33 +355,36 @@ const handleDelete = async (itemId) => {
                                 id={`customFieldValue-${index}`}
                                 value={field.value}
                                 onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
-                                className="form-control"
+                                  className="form-control color-bg color-text"
                             />
                         )}
                     </div>
+					</div>
                 ))}
 
-                <button type="button" className="btn btn-primary me-2 mb-2" onClick={() => addCustomField('string')}>
-                    Add text
+               <div className="d-flex flex-wrap">
+                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('string')}>
+                    Add Text
                 </button>
-                <button type="button" className="btn btn-primary me-2 mb-2" onClick={() => addCustomField('number')}>
-                    Add Number 
+                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('number')}>
+                    Add Number
                 </button>
-                <button type="button" className="btn btn-primary me-2 mb-2" onClick={() => addCustomField('multiline')}>
+                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('multiline')}>
                     Add Description
                 </button>
-                <button type="button" className="btn btn-primary me-2 mb-2" onClick={() => addCustomField('date')}>
-                    Add Date 
+                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('date')}>
+                    Add Date
                 </button>
-                <button type="button" className="btn btn-primary me-2 mb-2" onClick={() => addCustomField('boolean')}>
-                    Add checkbox
+                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('boolean')}>
+                    Add Checkbox
                 </button>
+            </div>
 
-                <button type="submit" className="btn btn-dark">
-                    Create
-                </button>
-            </form>
-        </div>
+            <button type="submit" className="btn btn-dark mt-3">
+                Create
+            </button>
+        </form>
+    </div>
     );
 }
 

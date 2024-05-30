@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Users = () => {
@@ -25,6 +25,10 @@ const Users = () => {
 
   const handleCreateCollection = (userId) => {
     navigate(`/create?userId=${userId}`);
+  };
+
+  const handleViewCollections = (userId) => {
+    navigate(`/user-collections/${userId}`);
   };
 
   const toggleAdminStatus = async (userId) => {
@@ -88,6 +92,7 @@ const Users = () => {
               </td>
               <td>
                 <button onClick={() => handleCreateCollection(user.userId)} className="btn btn-dark me-2">Create Collection</button>
+                <button onClick={() => handleViewCollections(user.userId)} className="btn btn-dark me-2">View Collections</button>
                 {isAdminUser() && (
                   <button onClick={() => toggleAdminStatus(user.userId)} className="btn btn-dark">
                     {user.admin === 1 ? 'Remove Admin' : 'Make Admin'}

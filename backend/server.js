@@ -195,9 +195,9 @@ app.put('/users/:userId/admin', async (req, res) => {
       const [result] = await db.promise().execute(sql, values);
 
       if (result.affectedRows > 0) {
-        return res.json({ success: true, message: `User ${userId} admin status updated successfully` }); // Change 'id' to 'userId'
+        return res.json({ success: true, message: `User ${userId} admin status updated successfully` }); 
       } else {
-        return res.status(404).json({ error: `User with ID ${userId} not found` }); // Change 'id' to 'userId'
+        return res.status(404).json({ error: `User with ID ${userId} not found` }); 
       }
     } catch (error) {
       console.error('Error updating admin status:', error);
@@ -207,18 +207,18 @@ app.put('/users/:userId/admin', async (req, res) => {
 });
 
 
-
 app.get('/collection/:id/items', (req, res) => {
-  const collectionId = req.params.id;
-  const sql = "SELECT * FROM item WHERE collectionId = ?";
-  db.query(sql, [collectionId], (err, result) => {
-    if (err) {
-      console.error("Error in database query:", err);
-      return res.status(500).json({ error: "Error occurred while fetching items" });
-    }
-    return res.json(result);
-  });
+    const collectionId = req.params.id;
+    const sql = "SELECT item.*, collection.userId AS ownerId FROM item INNER JOIN collection ON item.collectionId = collection.id WHERE item.collectionId = ?";
+    db.query(sql, [collectionId], (err, result) => {
+        if (err) {
+            console.error("Error in database query:", err);
+            return res.status(500).json({ error: "Error occurred while fetching items" });
+        }
+        return res.json(result);
+    });
 });
+
 
 app.post('/collection/:collectionId/items', (req, res) => {
     const collectionId = req.params.collectionId;
@@ -232,12 +232,12 @@ app.post('/collection/:collectionId/items', (req, res) => {
 
         const userId = decoded.id;
 
-        // Check if the user is an admin
+        
         if (decoded.isAdmin) {
-            // User is an admin, proceed with item creation
+           
             createItem(collectionId, name, tags, customFields, res);
         } else {
-            // User is not an admin, check if the user is the owner of the collection
+           
             const checkOwnerSql = `SELECT userId FROM collection WHERE id = ?`;
             db.query(checkOwnerSql, [collectionId], (err, result) => {
                 if (err) {
@@ -249,7 +249,7 @@ app.post('/collection/:collectionId/items', (req, res) => {
                     return res.status(403).json({ error: 'Forbidden' });
                 }
 
-                // User is authorized, proceed with item creation
+              
                 createItem(collectionId, name, tags, customFields, res);
             });
         }
@@ -285,90 +285,102 @@ function createItem(collectionId, name, tags, customFields, res) {
     });
 }
 
+app.get('/user', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authorization header missing' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const sql = "SELECT `id`, `username`, `admin` FROM `user` WHERE `id` = ?";
+    db.query(sql, [decoded.id], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: "An error occurred while fetching user info" });
+      }
+      if (result.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      return res.json(result[0]);
+    });
+  });
+});
 
 
 app.delete('/items/:itemId', (req, res) => {
-    const itemId = req.params.itemId;
-    const token = req.headers.authorization.split(' ')[1];
+  const itemId = req.params.itemId;
+  const token = req.headers.authorization.split(' ')[1];
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            console.error('Error verifying token:', err);
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.error('Error verifying token:', err);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-        // Logging decoded token for debugging
-        console.log('Decoded token:', decoded);
+   
+    const userId = decoded.id;
+    const isAdmin = decoded.isAdmin;
 
-        // Extract userId from the decoded token
-        const userId = decoded.id;
-
-        // Check if the user is an admin
-        const isAdmin = decoded.isAdmin;
-
-        // Logging user information for debugging
-        console.log('User ID:', userId);
-        console.log('Is Admin:', isAdmin);
-
-        // If the user is not an admin, they must be the owner of the item to delete it
-        if (!isAdmin) {
-            const sql = "SELECT userId FROM item WHERE id = ?";
-            const values = [itemId];
-
-            db.query(sql, values, (err, result) => {
-                if (err) {
-                    console.error('Error checking item ownership:', err);
-                    return res.status(500).json({ error: 'Error occurred while checking item ownership' });
-                } else {
-                    // If the item is not found or the user is not the owner, return an error
-                    if (result.length === 0 || result[0].userId !== userId) {
-                        console.log('User is not the owner of the item.');
-                        return res.status(403).json({ error: 'Forbidden: You are not authorized to delete this item' });
-                    } else {
-                        console.log('User is the owner of the item.');
-                        // If the user is the owner, delete the item
-                        deleteItem(itemId, res);
-                    }
-                }
-            });
-        } else {
-            // If the user is an admin, they can delete any item
-            deleteItem(itemId, res);
-        }
-    });
-});
-
-function deleteItem(itemId, res) {
-    const sql = "DELETE FROM item WHERE id = ?";
+    
+    const sql = `
+      SELECT i.*, c.userId AS ownerId 
+      FROM item i 
+      JOIN collection c ON i.collectionId = c.id 
+      WHERE i.id = ?
+    `;
     const values = [itemId];
 
     db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error checking item ownership:', err);
+        return res.status(500).json({ error: 'Error occurred while checking item ownership' });
+      }
+      
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
+      
+      const itemOwnerId = result[0].ownerId;
+
+      if (!isAdmin && itemOwnerId !== userId) {
+        console.log('User is not the owner of the item.');
+        return res.status(403).json({ error: 'Forbidden: You are not authorized to delete this item' });
+      }
+      
+      
+      const deleteSql = "DELETE FROM item WHERE id = ?";
+      db.query(deleteSql, [itemId], (err, deleteResult) => {
         if (err) {
-            console.error('Error deleting item:', err);
-            return res.status(500).json({ error: 'Error occurred while deleting item', details: err.message });
-        } else {
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Item not found' });
-            } else {
-                return res.status(200).json({ message: 'Item deleted successfully' });
-            }
+          console.error('Error deleting item:', err);
+          return res.status(500).json({ error: 'Error occurred while deleting item', details: err.message });
         }
+
+        if (deleteResult.affectedRows === 0) {
+          return res.status(404).json({ error: 'Item not found' });
+        } else {
+          return res.status(200).json({ message: 'Item deleted successfully' });
+        }
+      });
     });
-}
+  });
+});
+
 
 
 
 
 app.get('/tags', (req, res) => {
     const { query } = req.query;
-console.log("Received request for tags with query:", query);
+    console.log("Received request for tags with query:", query);
 
-const tags = query.split(',').map(tag => tag.trim());
-const placeholders = tags.map(() => '?').join(','); 
-const sql = `SELECT DISTINCT tags FROM item WHERE tags IN (${placeholders})`; 
-const values = tags;
-
-
+    const tags = query.split(',').map(tag => tag.trim());
+    const placeholders = tags.map(() => '?').join(','); 
+    const sql = `SELECT DISTINCT tags FROM item WHERE tags IN (${placeholders})`; 
+    const values = tags;
     db.query(sql, values, (err, result) => {
         if (err) {
             console.error("Error fetching tags:", err);
@@ -381,6 +393,22 @@ const values = tags;
 });
 
 
+app.get('/items/tags', (req, res) => {
+    const query = req.query.query;
+    let sql = 'SELECT DISTINCT tags FROM item';
+    if (query) {
+        sql +=  ` WHERE tags LIKE '%${query}%'`;
+    }
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error fetching tags:', err);
+            res.status(500).json({ error: 'Failed to fetch tags' });
+        } else {
+            const tags = result.map(row => row.tags);
+            res.json(tags);
+        }
+    });
+});
 
 
 app.get('/users/:userId/collections', (req, res) => {

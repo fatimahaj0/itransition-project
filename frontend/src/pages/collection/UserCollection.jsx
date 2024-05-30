@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './UserCollection.css'; // Import a CSS file for custom styles
+import './UserCollection.css'; 
 
 const UserCollection = () => {
   const [collections, setCollections] = useState([]);

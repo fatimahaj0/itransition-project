@@ -67,7 +67,7 @@ const EditCollection = ({ collectionId }) => {
         image: imageUrl
       };
 
-      // Update existing collection
+     
       axios.put(`http://localhost:8081/collection/${collectionId}`, collectionData, {
         headers: {
           'Authorization': `Bearer ${token}` 

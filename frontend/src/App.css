@@ -35,6 +35,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+.cursor{cursor: pointer;}
 
 @media screen and (max-width:1440px){
   .fs-22, .fs-20 {font-size: 14px;}

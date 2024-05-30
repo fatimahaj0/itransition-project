@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/AuthContext';
+import {jwtDecode} from 'jwt-decode'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './style.css';
 
 function Home() {
   const [data, setData] = useState([]);
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getData = async () => {
@@ -29,6 +31,15 @@ function Home() {
     getData();
   }, []);
 
+  const handleMyCollections = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.id;
+      navigate(`/user-collections/${userId}`);
+    }
+  };
+
   return (
     <div className="container">
       <div className="row">
@@ -49,7 +60,8 @@ function Home() {
       {isAuthenticated && (
         <div className="row mt-4">
           <div className="col text-center">
-            <Link to="/create" className="btn btn-dark">Create Collection</Link>
+            <Link to="/create" className="btn btn-dark me-2">Create Collection</Link>
+            <button onClick={handleMyCollections} className="btn btn-dark">My Collections</button>
           </div>
         </div>
       )}
