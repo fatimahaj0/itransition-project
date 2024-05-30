@@ -197,194 +197,172 @@ useEffect(() => {
     };
 
     return (
-        <div className="container my-5 color-bg color-text">
-            <h2 className="text-center mb-4 color-text">Items for Collection ID: {collectionId}</h2>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <ul className="list-group mb-4">
-                {items.map((item) => (
-                    <li key={item.id} className="list-group-item mb-2 color-bg color-text">
-                        <div><strong>Name:</strong> {item.name}</div>
-                    <div><strong>Tags:</strong> {item.tags}</div>
-                        {item.customFields && (
-                            <ul className="list-unstyled mt-2">
-                                {item.customFields.map((field, index) => (
-                                    <li key={index}  className="mb-1">
-                                        <div><strong>{field.name}:</strong> {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        <div className="item-actions">
-                       
-
-        <button onClick={() => handleEdit(item.id)} className="btn btn-dark me-2">Edit</button>
-        <button onClick={() => handleDelete(item.id)} className="btn btn-dark me-2">Delete</button>
-     
-
-
-                            <button className="btn btn-light like-button"><i className="fas fa-heart"></i> Like</button>
-                            <button className="btn btn-light comment-button"><i className="fas fa-comment"></i> Comment</button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-
-         <h2 className="mt-4 mb-3 text-center color-text">Create an Item</h2>
-
-            <form onSubmit={handleSubmit}>
-                <div className="row mb-3">
-				  <div className="col-md-6">
-                    <label htmlFor="name" className="form-label color-text">
-                        Name:
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={itemData.name}
-                        onChange={handleChange}
-                        className="form-control color-bg color-text"
-                        required
-                    />
-                </div>
-                 <div className="col-md-6">
-                    <label htmlFor="tags" className="form-label color-text">Tags:</label>
-                      
-                 <input
-                        type="text"
-                        id="tags"
-                        name="tags"
-                        value={itemData.tags}
-                        onChange={handleChange}
-                        className="form-control color-bg color-text"
-            autoComplete = "off"
-                        required
-                    />
-                    <div className="autocomplete-dropdown cursor" style={{display: dropdownVisible ? 'block' : 'none'}}>
-            {tagSuggestions.length > 0 && tagSuggestions.map((tag, index) => (
-              <div 
-                key={index} 
-                className="px-2 py-1 border-bottom"
-                onClick={() => {
-                  setItemData(prevItemData => ({
-                    ...prevItemData,
-                    tags: tag.tags
-                  }));
-                  setDropdownVisible(false);
-                }}
-              >
-                {tag.tags}
-              </div>
+// Inside the return statement of your component
+<div className="container my-5 color-bg color-text">
+  <h2 className="text-center mb-4 color-text">Items for Collection ID: {collectionId}</h2>
+  {error && <div className="alert alert-danger">{error}</div>}
+  <ul className="list-group mb-4">
+    {items.map((item) => (
+      <li key={item.id} className="list-group-item mb-2 color-bg color-text">
+        <div><strong>Name:</strong> {item.name}</div>
+        <div><strong>Tags:</strong> {item.tags}</div>
+        {item.customFields && (
+          <ul className="list-unstyled mt-2">
+            {item.customFields.map((field, index) => (
+              <li key={index} className="mb-1">
+                <div><strong>{field.name}:</strong> {field.type === 'boolean' ? (field.value ? 'Yes' : 'No') : field.value}</div>
+              </li>
             ))}
-          </div>
-                </div>
+          </ul>
+        )}
+        <div className="item-actions">
+          <button onClick={() => handleEdit(item.id)} className="btn btn-dark me-2">Edit</button>
+          <button onClick={() => handleDelete(item.id)} className="btn btn-dark me-2">Delete</button>
+          <button className="btn btn-light like-button"><i className="fas fa-heart"></i> Like</button>
+          <button className="btn btn-light comment-button"><i className="fas fa-comment"></i> Comment</button>
+        </div>
+      </li>
+    ))}
+  </ul>
+
+  <h2 className="mt-4 mb-3 text-center color-text">Create an Item</h2>
+
+  <form onSubmit={handleSubmit}>
+    <div className="row mb-3">
+      <div className="col-md-6">
+        <label htmlFor="name" className="form-label color-text">Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={itemData.name}
+          onChange={handleChange}
+          className="form-control color-bg color-text"
+          required
+        />
+      </div>
+      <div className="col-md-6 form-group">
+        <label htmlFor="tags" className="form-label color-text">Tags:</label>
+        <input
+          type="text"
+          id="tags"
+          name="tags"
+          value={itemData.tags}
+          onChange={handleChange}
+          className="form-control color-bg color-text"
+          autoComplete="off"
+          required
+        />
+        <div className="autocomplete-dropdown" style={{display: dropdownVisible ? 'block' : 'none'}}>
+          {tagSuggestions.length > 0 && tagSuggestions.map((tag, index) => (
+            <div
+              key={index}
+              className="px-2 py-1 border-bottom"
+              onClick={() => {
+                setItemData(prevItemData => ({
+                  ...prevItemData,
+                  tags: tag
+                }));
+                setDropdownVisible(false);
+              }}
+            >
+              {tag}
             </div>
-
-                {customFields.map((field, index) => (
-                       <div className="row mb-3" key={index}>
-                    <div className="col-md-6">
-                        <label htmlFor={`customFieldName-${index}`} className="form-label color-text">
-                            Custom Field Name:
-                        </label>
-                        <input
-                            type="text"
-                            id={`customFieldName-${index}`}
-                            value={field.name}
-                            onChange={(e) => handleCustomFieldNameChange(index, e.target.value)}
-                            className="form-control color-bg color-text"
-                        />
-						  </div>
-                    <div className="col-md-6">
-                        <label htmlFor={`customFieldValue-${index}`} className="form-label color-text mt-2">
-                            Custom Field Value:
-                        </label>
-                        {field.type === 'multiline' ? (
-                            <textarea
-                                id={`customFieldValue-${index}`}
-                                value={field.value}
-                                onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
-                               className="form-control color-bg color-text"
-                            />
-                        ) : field.type === 'boolean' ? (
-						 <div className="form-check mt-2">
-                            <input
-                                type="checkbox"
-                                id={`customFieldValue-${index}`}
-                                checked={field.value}
-                                onChange={(e) => handleCustomFieldValueChange(index, e.target.checked)}
-                                className="form-check-input"
-                            />
-							  <label className="form-check-label color-text" htmlFor={`customFieldValue-${index}`}>Yes</label>
-                            </div>
-                        ) : field.type === 'date' ? (
-                               <div className="d-flex mt-2">
-                                <select
-                                    value={field.month}
-                                    onChange={(e) => handleDateChange(index, 'month', e.target.value)}
-                                  className="form-select me-2 color-bg color-text"
-                                >                             
-                                    <option value="">Month</option>
-                                    {[...Array(12).keys()].map(i => (
-                                        <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{i + 1}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={field.day}
-                                    onChange={(e) => handleDateChange(index, 'day', e.target.value)}
-                                      className="form-select me-2 color-bg color-text"
-                                >
-                                    <option value="">Day</option>
-                                    {[...Array(31).keys()].map(i => (
-                                        <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{i + 1}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={field.year}
-                                    onChange={(e) => handleDateChange(index, 'year', e.target.value)}
-                                    className="form-select color-bg color-text"
-                                >
-                                    <option value="">Year</option>
-                                    {[...Array(50).keys()].map(i => (
-                                        <option key={i + 1970} value={i + 1970}>{i + 1970}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        ) : (
-                            <input
-                                type={field.type === 'number' ? 'number' : 'text'}
-                                id={`customFieldValue-${index}`}
-                                value={field.value}
-                                onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
-                                  className="form-control color-bg color-text"
-                            />
-                        )}
-                    </div>
-					</div>
-                ))}
-
-               <div className="d-flex flex-wrap">
-                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('string')}>
-                    Add Text
-                </button>
-                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('number')}>
-                    Add Number
-                </button>
-                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('multiline')}>
-                    Add Description
-                </button>
-                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('date')}>
-                    Add Date
-                </button>
-                <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('boolean')}>
-                    Add Checkbox
-                </button>
-            </div>
-
-            <button type="submit" className="btn btn-dark mt-3">
-                Create
-            </button>
-        </form>
+          ))}
+        </div>
+      </div>
     </div>
+
+    {customFields.map((field, index) => (
+      <div className="row mb-3" key={index}>
+        <div className="col-md-6">
+          <label htmlFor={`customFieldName-${index}`} className="form-label color-text">Custom Field Name:</label>
+          <input
+            type="text"
+            id={`customFieldName-${index}`}
+            value={field.name}
+            onChange={(e) => handleCustomFieldNameChange(index, e.target.value)}
+            className="form-control color-bg color-text"
+          />
+        </div>
+        <div className="col-md-6">
+          <label htmlFor={`customFieldValue-${index}`} className="form-label color-text mt-2">Custom Field Value:</label>
+          {field.type === 'multiline' ? (
+            <textarea
+              id={`customFieldValue-${index}`}
+              value={field.value}
+              onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
+              className="form-control color-bg color-text"
+            />
+          ) : field.type === 'boolean' ? (
+            <div className="form-check mt-2">
+              <input
+                type="checkbox"
+                id={`customFieldValue-${index}`}
+                checked={field.value}
+                onChange={(e) => handleCustomFieldValueChange(index, e.target.checked)}
+                className="form-check-input"
+              />
+              <label className="form-check-label color-text" htmlFor={`customFieldValue-${index}`}>Yes</label>
+            </div>
+          ) : field.type === 'date' ? (
+            <div className="d-flex mt-2">
+              <select
+                value={field.month}
+                onChange={(e) => handleDateChange(index, 'month', e.target.value)}
+                className="form-select me-2 color-bg color-text"
+              >
+                <option value="">Month</option>
+                {[...Array(12).keys()].map(i => (
+                  <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{i + 1}</option>
+                ))}
+              </select>
+              <select
+                value={field.day}
+                onChange={(e) => handleDateChange(index, 'day', e.target.value)}
+                className="form-select me-2 color-bg color-text"
+              >
+                <option value="">Day</option>
+                {[...Array(31).keys()].map(i => (
+                  <option key={i + 1} value={String(i + 1).padStart(2, '0')}>{i + 1}</option>
+                ))}
+              </select>
+              <select
+                value={field.year}
+                onChange={(e) => handleDateChange(index, 'year', e.target.value)}
+                className="form-select color-bg color-text"
+              >
+                <option value="">Year</option>
+                {[...Array(50).keys()].map(i => (
+                  <option key={i + 1970} value={i + 1970}>{i + 1970}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <input
+              type={field.type === 'number' ? 'number' : 'text'}
+              id={`customFieldValue-${index}`}
+              value={field.value}
+              onChange={(e) => handleCustomFieldValueChange(index, e.target.value)}
+              className="form-control color-bg color-text"
+            />
+          )}
+        </div>
+      </div>
+    ))}
+
+    <div className="d-flex flex-wrap">
+      <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('string')}>Add Text</button>
+      <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('number')}>Add Number</button>
+      <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('multiline')}>Add Description</button>
+      <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('date')}>Add Date</button>
+      <button type="button" className="btn btn-outline-dark me-2 mb-2" onClick={() => addCustomField('boolean')}>Add Checkbox</button>
+    </div>
+
+    <button type="submit" className="btn btn-dark mt-3">Create</button>
+  </form>
+</div>
+
     );
 }
 
