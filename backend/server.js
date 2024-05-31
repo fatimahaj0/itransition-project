@@ -521,14 +521,16 @@ app.get('/categories', (req, res) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
-})
 
 
 app.listen(8081, () => {
   console.log("Server is running on port 8081");
 });
+
+app.use(express.static(path.join(__dirname, '/frontend/dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+})
+
 module.exports = db;
