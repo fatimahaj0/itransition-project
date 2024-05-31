@@ -22,7 +22,7 @@ const db = mysql.createConnection({
   password: '12345',
   database: 'itransition',
 });
-const __dirname = path.resolve() ;
+
 db.query("SELECT 1", (err, result) => {
   if (err) {
     console.error("Error connecting to database:", err);
