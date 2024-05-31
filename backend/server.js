@@ -5,8 +5,13 @@ const cors = require("cors");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
+const cookieParser = require('cookie-parser');
 const app = express();
 app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 app.use(express.json());
 
 const db = mysql.createConnection({
@@ -515,7 +520,11 @@ app.get('/categories', (req, res) => {
   });
 });
 
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+})
 
 
 app.listen(8081, () => {
