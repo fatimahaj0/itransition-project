@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "build": "npm install && npm install --prefix ../frontend && npm run build --prefix ../frontend",
-    "dev": "node_modules/.bin/nodemon server.js"
+    "dev": "node_modules/.bin/nodemon server.js" ,
+	"postinstall": "npm rebuild"
   },
   "keywords": [],
   "author": "",
