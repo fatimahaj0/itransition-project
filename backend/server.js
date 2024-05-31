@@ -1,4 +1,4 @@
-import path from 'path' ;
+const path = require('path');
 const express = require("express");
 const env = require('dotenv').config();
 
@@ -527,10 +527,10 @@ app.listen(8081, () => {
   console.log("Server is running on port 8081");
 });
 
-app.use(express.static(path.join(__dirname, '/frontend/dist')));
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
-})
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
 
 module.exports = db;
